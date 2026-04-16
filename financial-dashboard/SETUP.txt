@@ -1,0 +1,33 @@
+Financial Dashboard (from 1_-_Financial_Dashboard_Development.zip)
+================================================================
+
+1) Copy your zip into THIS folder (financial-dashboard/) on the machine where this repo lives.
+
+2) Unzip it, e.g.:
+   unzip -o "1_-_Financial_Dashboard_Development.zip"
+
+3) Open the folder that contains package.json (name may be like "financial-dashboard" or "client").
+
+4) Install and build:
+   npm install
+   npm run build
+
+5) Vite / SPA: the app must load correctly from a subpath. In vite.config.ts set:
+   base: '/finance-dashboard/'
+
+   If you use React Router:
+   <BrowserRouter basename="/finance-dashboard">
+
+6) Copy the production build into the main site’s public folder (from repo root):
+   rm -rf ../public/finance-dashboard/*
+   cp -r dist/* ../public/finance-dashboard/
+
+   (If the build outputs to "build" or "out", use that folder instead of dist.)
+
+7) Restart the FIGHURAI Next.js dev server and open:
+   http://localhost:3000/fighurfinance
+
+Ask → FighurFinance opens /fighurfinance by default (same site, new tab).
+
+Optional: run the dashboard dev server on another port and set in .env.local:
+NEXT_PUBLIC_FIGHUR_FINANCE_URL=http://localhost:5173
