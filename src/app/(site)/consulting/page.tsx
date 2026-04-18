@@ -15,7 +15,7 @@ import { SparkDemoVideo } from "@/components/spark-demo-video";
 export default function ConsultingPage() {
   const router = useRouter();
   return (
-    <div className="mx-auto w-full max-w-6xl flex-1 overflow-y-auto px-4 py-10 sm:px-6 sm:py-14">
+    <div className="mx-auto w-full min-w-0 max-w-6xl flex-1 overflow-y-auto overflow-x-hidden px-4 py-10 sm:px-6 sm:py-14">
       <HeroSection
         onOpenChat={() => router.push("/")}
         onOpenMembership={() =>

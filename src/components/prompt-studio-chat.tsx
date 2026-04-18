@@ -495,18 +495,18 @@ export function PromptStudioChat() {
       ) : null}
 
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex items-center gap-2 border-b border-white/[0.06] px-3 py-2 md:hidden">
+        <div className="flex min-w-0 items-center gap-2 border-b border-white/[0.06] px-3 py-2 md:hidden">
           <button
             type="button"
             onClick={() => setMobileSidebarOpen(true)}
-            className="rounded-full border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)]"
+            className="shrink-0 rounded-full border border-white/[0.1] bg-white/[0.05] px-3 py-1.5 text-xs font-medium text-[var(--text-primary)]"
           >
             Chats
           </button>
           <button
             type="button"
             onClick={newChat}
-            className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-semibold text-[var(--accent)]"
+            className="shrink-0 rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-semibold text-[var(--accent)]"
           >
             New
           </button>
