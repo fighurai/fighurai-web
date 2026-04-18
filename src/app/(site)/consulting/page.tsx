@@ -11,6 +11,7 @@ import { EmailAutomationDemo } from "@/components/email-automation-demo";
 import { CompanyChatDemo } from "@/components/company-chat-demo";
 import { InvoiceConverterDemo } from "@/components/invoice-converter-demo";
 import { SparkDemoVideo } from "@/components/spark-demo-video";
+import { SparkyRecordingDemo } from "@/components/sparky-recording-demo";
 
 export default function ConsultingPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function ConsultingPage() {
       />
       <ServicesSection />
       <SparkDemoVideo className="mb-12 sm:mb-16" />
+      <SparkyRecordingDemo className="mb-12 sm:mb-16" />
       <ConstructionChatDemo className="mb-12 sm:mb-16" />
       <CreativeCompanySiteDemo className="mb-12 sm:mb-16" />
       <EmailAutomationDemo className="mb-12 sm:mb-16" />
