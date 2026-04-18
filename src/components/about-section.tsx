@@ -11,6 +11,8 @@ const cofounders: readonly {
   /** Two-line label under the portrait; `name` stays for alt text. */
   lines?: readonly [string, string];
   portraitClassName?: string;
+  /** Serve this file as-is (no Next image optimizer) — keeps original pixels. */
+  imageUnoptimized?: boolean;
 }[] = [
   {
     name: "David Adegborioye",
@@ -19,7 +21,8 @@ const cofounders: readonly {
   },
   {
     name: "Fighur Kania",
-    src: "/images/cofounders/fighur-kania.png",
+    src: "/images/cofounders/fighur-kania-full.png",
+    imageUnoptimized: true,
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
     lines: ["Fighur", "Kania"],
@@ -89,6 +92,7 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
                   fill
                   sizes="(max-width: 640px) 120px, 128px"
                   className={person.portraitClassName ?? "object-cover object-center"}
+                  unoptimized={person.imageUnoptimized ?? false}
                   priority
                 />
               </div>
