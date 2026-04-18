@@ -4,7 +4,6 @@ import Markdown from "react-markdown";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 
 import type { ChatMessage } from "@/lib/chat-types";
 import { resolveBookingHref } from "@/lib/booking-from-prompt";
@@ -22,7 +21,6 @@ function id() {
 }
 
 export function AskChatWidget() {
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -180,8 +178,6 @@ export function AskChatWidget() {
   const bookingHref = bookingFromPrompt.href;
 
   const showEmpty = messages.length === 0;
-
-  if (pathname === "/") return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[95] flex flex-col items-end p-4 sm:p-6">
