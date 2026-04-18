@@ -23,8 +23,6 @@ const cofounders: readonly {
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
     lines: ["Fighur", "Kania"],
-    portraitClassName:
-      "object-cover scale-[1.18] object-[56%_center] [transform-origin:center]",
   },
   {
     name: "Mathew Ogunsemi",
@@ -84,7 +82,7 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
         >
           {cofounders.map((person) => (
             <li key={person.name} className="flex w-[7.5rem] flex-col items-center text-center sm:w-32">
-              <div className="relative aspect-square w-full overflow-hidden rounded-full shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.08]">
+              <div className="relative aspect-square w-full overflow-hidden rounded-full bg-[var(--bg-deep)] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.08]">
                 <Image
                   src={person.src}
                   alt={person.name}
