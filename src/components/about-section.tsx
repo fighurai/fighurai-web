@@ -13,6 +13,8 @@ const cofounders: readonly {
   portraitClassName?: string;
   /** Use a plain <img> (no next/image) so pixels are never re-encoded. */
   useNativeImg?: boolean;
+  /** Oversized + centered crop so baked-in borders in the PNG sit outside the circular clip. */
+  portraitZoomCrop?: boolean;
 }[] = [
   {
     name: "David Adegborioye",
@@ -23,9 +25,7 @@ const cofounders: readonly {
     name: "Fighur Kania",
     src: "/images/cofounders/fighur-kania-e863735c.png",
     useNativeImg: true,
-    /** Zoom inside the clip so the PNG’s outer black ring + margin are cropped off. */
-    portraitClassName:
-      "object-cover object-center scale-[1.55] [transform-origin:center]",
+    portraitZoomCrop: true,
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
     lines: ["Fighur", "Kania"],
@@ -88,7 +88,11 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
         >
           {cofounders.map((person) => (
             <li key={person.name} className="flex w-[7.5rem] flex-col items-center text-center sm:w-32">
-              <div className="relative aspect-square w-full overflow-hidden rounded-full bg-[var(--bg-deep)] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.08]">
+              <div
+                className={`relative aspect-square w-full overflow-hidden rounded-full bg-[var(--bg-deep)] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ${
+                  person.portraitZoomCrop ? "ring-0" : "ring-1 ring-white/[0.08]"
+                }`}
+              >
                 {person.useNativeImg ? (
                   // eslint-disable-next-line @next/next/no-img-element -- explicit full-quality cofounder asset
                   <img
@@ -98,9 +102,13 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
                     height={860}
                     decoding="async"
                     fetchPriority="high"
-                    className={`absolute inset-0 h-full w-full max-w-none ${
-                      person.portraitClassName ?? "object-cover object-center"
-                    }`}
+                    className={
+                      person.portraitZoomCrop
+                        ? "pointer-events-none absolute left-1/2 top-1/2 h-[290%] w-[290%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-[center_42%]"
+                        : `absolute inset-0 h-full w-full max-w-none ${
+                            person.portraitClassName ?? "object-cover object-center"
+                          }`
+                    }
                   />
                 ) : (
                   <Image
