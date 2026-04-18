@@ -23,6 +23,9 @@ const cofounders: readonly {
     name: "Fighur Kania",
     src: "/images/cofounders/fighur-kania-e863735c.png",
     useNativeImg: true,
+    /** Zoom inside the clip so the PNG’s outer black ring + margin are cropped off. */
+    portraitClassName:
+      "object-cover object-center scale-[1.55] [transform-origin:center]",
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
     lines: ["Fighur", "Kania"],
