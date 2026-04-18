@@ -104,7 +104,7 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
                     fetchPriority="high"
                     className={
                       person.portraitZoomCrop
-                        ? "pointer-events-none absolute left-1/2 top-1/2 h-[290%] w-[290%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-[center_42%]"
+                        ? "pointer-events-none absolute left-1/2 top-1/2 h-[228%] w-[228%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-[50%_32%]"
                         : `absolute inset-0 h-full w-full max-w-none ${
                             person.portraitClassName ?? "object-cover object-center"
                           }`
