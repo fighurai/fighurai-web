@@ -10,11 +10,8 @@ const cofounders: readonly {
   linkedinHref: string;
   /** Two-line label under the portrait; `name` stays for alt text. */
   lines?: readonly [string, string];
-  portraitClassName?: string;
-  /** Use a plain <img> (no next/image) so pixels are never re-encoded. */
-  useNativeImg?: boolean;
-  /** Oversized + centered crop so baked-in borders in the PNG sit outside the circular clip. */
-  portraitZoomCrop?: boolean;
+  /** Rounded square instead of circle — no circular mask on full-scene portraits. */
+  portraitRoundedSquare?: boolean;
 }[] = [
   {
     name: "David Adegborioye",
@@ -23,9 +20,8 @@ const cofounders: readonly {
   },
   {
     name: "Fighur Kania",
-    src: "/images/cofounders/fighur-kania-e863735c.png",
-    useNativeImg: true,
-    portraitZoomCrop: true,
+    src: "/images/cofounders/fighur-kania-201a.png",
+    portraitRoundedSquare: true,
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
     lines: ["Fighur", "Kania"],
@@ -89,37 +85,19 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
           {cofounders.map((person) => (
             <li key={person.name} className="flex w-[7.5rem] flex-col items-center text-center sm:w-32">
               <div
-                className={`relative aspect-square w-full overflow-hidden rounded-full bg-[var(--bg-deep)] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ${
-                  person.portraitZoomCrop ? "ring-0" : "ring-1 ring-white/[0.08]"
+                className={`relative aspect-square w-full overflow-hidden bg-[var(--bg-deep)] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.08] ${
+                  person.portraitRoundedSquare ? "rounded-2xl" : "rounded-full"
                 }`}
               >
-                {person.useNativeImg ? (
-                  // eslint-disable-next-line @next/next/no-img-element -- explicit full-quality cofounder asset
-                  <img
-                    src={person.src}
-                    alt={person.name}
-                    width={914}
-                    height={860}
-                    decoding="async"
-                    fetchPriority="high"
-                    className={
-                      person.portraitZoomCrop
-                        ? "pointer-events-none absolute left-1/2 top-1/2 h-[206%] w-[206%] max-w-none -translate-x-1/2 -translate-y-1/2 object-cover object-[50%_44%]"
-                        : `absolute inset-0 h-full w-full max-w-none ${
-                            person.portraitClassName ?? "object-cover object-center"
-                          }`
-                    }
-                  />
-                ) : (
-                  <Image
-                    src={person.src}
-                    alt={person.name}
-                    fill
-                    sizes="(max-width: 640px) 120px, 128px"
-                    className={person.portraitClassName ?? "object-cover object-center"}
-                    priority
-                  />
-                )}
+                <Image
+                  src={person.src}
+                  alt={person.name}
+                  fill
+                  sizes="(max-width: 640px) 120px, 128px"
+                  className="object-cover object-center"
+                  priority
+                  unoptimized={Boolean(person.portraitRoundedSquare)}
+                />
               </div>
               <p className="mt-3 text-sm font-semibold leading-snug text-[var(--text-primary)] sm:text-[0.9375rem]">
                 {person.lines ? (
