@@ -1,7 +1,0 @@
-# Local-only / huge dirs — Vercel builds from package.json + source; do not upload these.
-node_modules
-.next
-.venv-rembg
-.git
-*.log
-.env.local

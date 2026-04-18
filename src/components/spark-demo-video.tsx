@@ -36,8 +36,8 @@ export function SparkDemoVideo({
             {description}
           </p>
 
-          <div className="mt-6 min-w-0 overflow-x-auto overflow-y-visible rounded-xl border border-white/[0.1] bg-black/40 ring-1 ring-white/[0.05] [-webkit-overflow-scrolling:touch] sm:overflow-hidden">
-            <div className="relative aspect-video w-full min-h-[min(52vw,20rem)] min-w-0 max-w-full max-h-[min(88dvh,52rem)] sm:min-h-[200px] sm:max-h-[70vh]">
+          <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.1] bg-black/40 ring-1 ring-white/[0.05]">
+            <div className="relative aspect-video w-full max-h-[70vh] min-h-[200px]">
               <iframe
                 title="Demo: building a chatbot in Cursor with live app preview"
                 src={DEMO_IFRAME_SRC}
