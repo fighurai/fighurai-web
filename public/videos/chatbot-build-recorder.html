@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recording scene — Cursor build + live app</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0c0e12;
+        --panel: #12151c;
+        --border: rgba(255, 255, 255, 0.08);
+        --muted: #8b93a7;
+        --text: #e8ecf4;
+        --accent: #2dd4bf;
+        --accent-dim: rgba(45, 212, 191, 0.15);
+        --user-bubble: #1e293b;
+        --bot-bubble: #162032;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", system-ui, sans-serif;
+        overflow: hidden;
+      }
+      /* 16:9 stage — scale to viewport */
+      .stage-wrap {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: min(2vh, 16px);
+      }
+      .stage {
+        width: min(96vw, calc(96vh * 16 / 9));
+        aspect-ratio: 16 / 9;
+        max-height: 96vh;
+        display: grid;
+        grid-template-columns: 38fr 62fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+      }
+      /* —— Live app (left) —— */
+      .live {
+        background: linear-gradient(180deg, #0f1218 0%, var(--panel) 100%);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .live-top {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 12px rgba(45, 212, 191, 0.5);
+      }
+      .live-body {
+        flex: 1;
+        padding: 14px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .msg {
+        max-width: 92%;
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: clamp(10px, 1.35vw, 13px);
+        line-height: 1.45;
+        opacity: 0;
+        transform: translateY(6px);
+        animation: popIn 0.45s ease forwards;
+      }
+      .msg.user {
+        align-self: flex-end;
+        background: var(--user-bubble);
+        border: 1px solid var(--border);
+      }
+      .msg.bot {
+        align-self: flex-start;
+        background: var(--bot-bubble);
+        border: 1px solid rgba(45, 212, 191, 0.12);
+      }
+      .msg.visible {
+        opacity: 1;
+      }
+      @keyframes popIn {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .typing {
+        display: inline-flex;
+        gap: 4px;
+        padding: 8px 12px;
+        align-self: flex-start;
+        background: var(--bot-bubble);
+        border-radius: 12px;
+        border: 1px solid var(--border);
+      }
+      .typing span {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--muted);
+        animation: bounce 1.2s ease-in-out infinite;
+      }
+      .typing span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .typing span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+      .hint {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        color: var(--muted);
+        opacity: 0.75;
+        pointer-events: none;
+      }
+      html.embed .hint {
+        display: none;
+      }
+      /* —— IDE (right) —— */
+      .ide {
+        background: #0d1117;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      .ide-bar {
+        height: 34px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        gap: 6px;
+        border-bottom: 1px solid var(--border);
+        font-size: 11px;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+      .traffic {
+        display: flex;
+        gap: 5px;
+      }
+      .traffic i {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+      .traffic i:nth-child(1) {
+        background: #ff5f57;
+      }
+      .traffic i:nth-child(2) {
+        background: #febc2e;
+      }
+      .traffic i:nth-child(3) {
+        background: #28c840;
+      }
+      .ide-main {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        min-height: 0;
+      }
+      @media (max-width: 900px) {
+        .ide-main {
+          grid-template-columns: 72px 1fr;
+        }
+      }
+      .sidebar {
+        border-right: 1px solid var(--border);
+        padding: 8px 6px;
+        font-size: 10px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .sidebar strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #6e7681;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 9px;
+      }
+      .file {
+        padding: 3px 6px;
+        border-radius: 4px;
+        cursor: default;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file.active {
+        background: rgba(45, 212, 191, 0.12);
+        color: var(--accent);
+      }
+      .editor-wrap {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .tabs {
+        display: flex;
+        gap: 1px;
+        background: var(--border);
+        flex-shrink: 0;
+      }
+      .tab {
+        padding: 6px 12px;
+        font-size: 10px;
+        background: #161b22;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+      }
+      .tab.on {
+        color: var(--text);
+        border-bottom-color: var(--accent);
+        background: #0d1117;
+      }
+      .editor {
+        flex: 1;
+        overflow: auto;
+        padding: 10px 12px 16px;
+        font-size: clamp(9px, 1.05vw, 12px);
+        line-height: 1.55;
+      }
+      .editor pre {
+        margin: 0;
+        white-space: pre;
+      }
+      .kw {
+        color: #ff7b72;
+      }
+      .fn {
+        color: #d2a8ff;
+      }
+      .str {
+        color: #a5d6ff;
+      }
+      .com {
+        color: #8b949e;
+      }
+      .ty {
+        color: #79c0ff;
+      }
+      .cursor-blink {
+        display: inline-block;
+        width: 7px;
+        height: 1.1em;
+        background: var(--accent);
+        vertical-align: text-bottom;
+        margin-left: 1px;
+        animation: blink 1s step-end infinite;
+      }
+      @keyframes blink {
+        50% {
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage-wrap">
+      <div class="stage" id="stage">
+        <div class="live">
+          <div class="live-top">
+            <span class="live-dot" aria-hidden="true"></span>
+            Live preview
+          </div>
+          <div class="live-body" id="chat"></div>
+        </div>
+        <div class="ide">
+          <div class="ide-bar">
+            <span class="traffic" aria-hidden="true"
+              ><i></i><i></i><i></i
+            ></span>
+            <span style="margin-left: 8px">Cursor — fighurai-chatbot</span>
+          </div>
+          <div class="ide-main">
+            <div class="sidebar">
+              <strong>Explorer</strong>
+              <div class="file">app/</div>
+              <div class="file active">page.tsx</div>
+              <div class="file">components/chat.tsx</div>
+              <div class="file">app/api/chat/route.ts</div>
+            </div>
+            <div class="editor-wrap">
+              <div class="tabs">
+                <div class="tab on">page.tsx</div>
+                <div class="tab">route.ts</div>
+              </div>
+              <div class="editor">
+                <pre id="code"></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">Fullscreen this page and record (OBS / QuickTime). Animation loops.</p>
+    <script>
+      if (/[?&]embed=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add("embed");
+      }
+    </script>
+    <script>
+      (function () {
+        const codeEl = document.getElementById("code");
+        const chatEl = document.getElementById("chat");
+
+        const SOURCE = `import Chat from "@/components/chat";
+
+export default function Page() {
+  return (
+    <main className="min-h-dvh">
+      <Chat />
+    </main>
+  );
+}`;
+
+        const HIGHLIGHT = (raw) => {
+          const lines = raw.split("\n");
+          return lines
+            .map((line) => {
+              let s = line
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+              s = s.replace(/\bexport default\b/g, '<span class="kw">export default</span>');
+              s = s.replace(/\b(import|function|return|from)\b/g, '<span class="kw">$1</span>');
+              s = s.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="str">$1</span>');
+              s = s.replace(/(\/\/.*)$/g, '<span class="com">$1</span>');
+              s = s.replace(/\b(Page|Chat|main)\b/g, '<span class="fn">$1</span>');
+              return s;
+            })
+            .join("\n");
+        };
+
+        /** Left panel timeline: cumulative messages + optional typing indicator */
+        const CHAT_STEPS = [
+          { t: 0, typing: true },
+          {
+            t: 2200,
+            typing: false,
+            messages: [
+              '<div class="msg user visible">Add a support chatbot with our docs in context</div>',
+            ],
+          },
+          {
+            t: 4800,
+            typing: true,
+            messages: [
+              '<div class="msg user visible">Add a support chatbot with our docs in context</div>',
+              '<div class="msg bot visible">On it — wiring the UI and API route now.</div>',
+            ],
+          },
+          {
+            t: 8200,
+            typing: false,
+            messages: [
+              '<div class="msg user visible">Add a support chatbot with our docs in context</div>',
+              '<div class="msg bot visible">On it — wiring the UI and API route now.</div>',
+              '<div class="msg bot visible">Streaming replies from /api/chat. Try sending a message.</div>',
+            ],
+          },
+          {
+            t: 10800,
+            typing: false,
+            messages: [
+              '<div class="msg user visible">Add a support chatbot with our docs in context</div>',
+              '<div class="msg bot visible">On it — wiring the UI and API route now.</div>',
+              '<div class="msg bot visible">Streaming replies from /api/chat. Try sending a message.</div>',
+              '<div class="msg user visible">What’s the refund policy?</div>',
+            ],
+          },
+          {
+            t: 13800,
+            typing: false,
+            messages: [
+              '<div class="msg user visible">Add a support chatbot with our docs in context</div>',
+              '<div class="msg bot visible">On it — wiring the UI and API route now.</div>',
+              '<div class="msg bot visible">Streaming replies from /api/chat. Try sending a message.</div>',
+              '<div class="msg user visible">What’s the refund policy?</div>',
+              '<div class="msg bot visible">Per your policy doc: refunds within 14 days of purchase…</div>',
+            ],
+          },
+        ];
+
+        const TYPE_MS = 36;
+        const LOOP_PAUSE = 3500;
+        const LAST_STEP_T = CHAT_STEPS[CHAT_STEPS.length - 1].t;
+        const LOOP_TOTAL = LAST_STEP_T + 4500;
+
+        let charIdx = 0;
+        let phase = 0;
+
+        function renderCodePartial(n) {
+          const slice = SOURCE.slice(0, n);
+          const tail = '<span class="cursor-blink"></span>';
+          codeEl.innerHTML = HIGHLIGHT(slice) + (n < SOURCE.length ? tail : "");
+        }
+
+        function setChat(elapsed) {
+          let step = CHAT_STEPS[0];
+          for (let i = CHAT_STEPS.length - 1; i >= 0; i--) {
+            if (elapsed >= CHAT_STEPS[i].t) {
+              step = CHAT_STEPS[i];
+              break;
+            }
+          }
+          chatEl.innerHTML = (step.messages || []).join("");
+          if (step.typing) {
+            chatEl.insertAdjacentHTML(
+              "beforeend",
+              '<div class="typing" aria-hidden="true"><span></span><span></span><span></span></div>'
+            );
+          }
+        }
+
+        function tick() {
+          const elapsed = phase * TYPE_MS;
+          if (elapsed >= LOOP_TOTAL) {
+            charIdx = 0;
+            phase = 0;
+            renderCodePartial(0);
+            setChat(0);
+            setTimeout(tick, LOOP_PAUSE);
+            return;
+          }
+
+          if (charIdx < SOURCE.length) {
+            charIdx++;
+            renderCodePartial(charIdx);
+          } else {
+            renderCodePartial(SOURCE.length);
+          }
+
+          setChat(elapsed);
+          phase++;
+          setTimeout(tick, TYPE_MS);
+        }
+
+        renderCodePartial(0);
+        setChat(0);
+        setTimeout(tick, 600);
+      })();
+    </script>
+  </body>
+</html>

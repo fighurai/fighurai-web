@@ -1,6 +1,37 @@
 "use client";
 
+import Image from "next/image";
+
 import { BOOKING_URL } from "@/lib/site-links";
+
+const cofounders: readonly {
+  name: string;
+  src: string;
+  linkedinHref: string;
+  /** Two-line label under the portrait; `name` stays for alt text. */
+  lines?: readonly [string, string];
+  portraitClassName?: string;
+}[] = [
+  {
+    name: "David Adegborioye",
+    src: "/images/cofounders/david-adegborioye.png",
+    linkedinHref: "https://www.linkedin.com/in/davidadegborioye1/",
+  },
+  {
+    name: "Fighur Kania",
+    src: "/images/cofounders/fighur-kania.png",
+    linkedinHref:
+      "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
+    lines: ["Fighur", "Kania"],
+    portraitClassName:
+      "object-cover scale-[1.18] object-[56%_center] [transform-origin:center]",
+  },
+  {
+    name: "Mathew Ogunsemi",
+    src: "/images/cofounders/mathew-ogunsemi.png",
+    linkedinHref: "https://www.linkedin.com/in/matthew-ogunsemi-44bb961ba/",
+  },
+];
 
 type AboutSectionProps = {
   onOpenChat?: () => void;
@@ -43,6 +74,50 @@ const steps = [
 export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
   return (
     <section id="about" className="scroll-mt-24">
+      <div className="mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pb-12 sm:pt-8">
+        <p className="mb-6 text-center text-xs font-medium uppercase tracking-[0.2em] text-[var(--text-faint)]">
+          Co-founders
+        </p>
+        <ul
+          className="flex flex-wrap items-start justify-center gap-x-10 gap-y-8 sm:gap-x-14 md:gap-x-16"
+          aria-label="FIGHURAI co-founders"
+        >
+          {cofounders.map((person) => (
+            <li key={person.name} className="flex w-[7.5rem] flex-col items-center text-center sm:w-32">
+              <div className="relative aspect-square w-full overflow-hidden rounded-full shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] ring-1 ring-white/[0.08]">
+                <Image
+                  src={person.src}
+                  alt={person.name}
+                  fill
+                  sizes="(max-width: 640px) 120px, 128px"
+                  className={person.portraitClassName ?? "object-cover object-center"}
+                  priority
+                />
+              </div>
+              <p className="mt-3 text-sm font-semibold leading-snug text-[var(--text-primary)] sm:text-[0.9375rem]">
+                {person.lines ? (
+                  <>
+                    <span className="block">{person.lines[0]}</span>
+                    <span className="block">{person.lines[1]}</span>
+                  </>
+                ) : (
+                  person.name
+                )}
+              </p>
+              <a
+                href={person.linkedinHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 text-xs font-medium text-[var(--text-muted)] underline-offset-2 transition hover:text-[var(--accent)] hover:underline"
+                aria-label={`${person.name} on LinkedIn`}
+              >
+                LinkedIn
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <div className="relative overflow-hidden pb-16 sm:pb-20">
         <div className="pointer-events-none absolute inset-0 opacity-90" aria-hidden>
           <div className="absolute -left-1/4 top-0 h-[380px] w-[65%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(45,212,191,0.16),transparent_65%)] blur-3xl" />
@@ -187,11 +262,6 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
                   </span>
                 </li>
               </ul>
-              <p className="mt-5 border-t border-white/[0.06] pt-5 text-xs leading-relaxed text-[var(--text-faint)]">
-                Optional <strong className="font-medium text-[var(--text-muted)]">Web</strong> mode
-                adds public search snippets; facts about FIGHURAI always come from our site content,
-                not the open web.
-              </p>
               <a
                 href={BOOKING_URL}
                 target="_blank"

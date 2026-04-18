@@ -50,6 +50,11 @@ body {
   border-radius: 999px;
 }
 
+.studio-md {
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
 .studio-md :first-child {
   margin-top: 0;
 }

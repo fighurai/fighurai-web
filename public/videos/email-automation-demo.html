@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Daily calendar digest — email automation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0c0d10;
+        --panel: #13151c;
+        --border: rgba(255, 255, 255, 0.08);
+        --muted: #8b93a7;
+        --text: #e8ecf4;
+        --accent: #7c9cff;
+        --accent2: #a78bfa;
+        --good: #34d399;
+        --line-hl: rgba(124, 156, 255, 0.18);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", system-ui, sans-serif;
+        overflow: hidden;
+      }
+      .stage-wrap {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: min(2vh, 12px);
+      }
+      .stage {
+        width: min(96vw, calc(96vh * 16 / 9));
+        aspect-ratio: 16 / 9;
+        max-height: 96vh;
+        display: grid;
+        grid-template-columns: 40fr 60fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .main {
+        background: linear-gradient(180deg, #101218 0%, var(--panel) 100%);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .main-head {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .main-head i {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 8px rgba(52, 211, 153, 0.45);
+      }
+      .main-body {
+        flex: 1;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 8px;
+        padding: 10px;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .block {
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .block h3 {
+        margin: 0;
+        padding: 6px 8px;
+        font-size: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .block .inner {
+        padding: 8px;
+        font-size: clamp(8px, 1vw, 10px);
+        line-height: 1.45;
+        overflow-y: auto;
+        flex: 1;
+      }
+      .row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .row:last-child {
+        border-bottom: 0;
+      }
+      .lang,
+      .tag {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8px;
+        padding: 2px 5px;
+        border-radius: 4px;
+        background: rgba(124, 156, 255, 0.15);
+        color: var(--accent);
+        flex-shrink: 0;
+      }
+      .tree {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 8px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .tree .hl {
+        color: var(--good);
+      }
+      .hint {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: var(--muted);
+        opacity: 0.65;
+        pointer-events: none;
+      }
+      html.embed .hint {
+        display: none;
+      }
+      /* Right: full inbox UI + code */
+      .side {
+        background: #0d0e11;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      .mail-section {
+        flex: 1.45;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid var(--border);
+        overflow: hidden;
+        background: #1a1b1f;
+      }
+      /* —— Fake mail client (Gmail-ish dark) —— */
+      .client-top {
+        height: 34px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 10px;
+        background: #232429;
+        border-bottom: 1px solid #000;
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+      .client-brand {
+        font-family: "DM Sans", sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        color: #f1f5f9;
+        letter-spacing: -0.02em;
+      }
+      .client-brand span {
+        font-weight: 500;
+        color: var(--accent);
+        margin-left: 2px;
+      }
+      .client-search {
+        flex: 1;
+        max-width: 140px;
+        height: 22px;
+        border-radius: 999px;
+        background: #141518;
+        border: 1px solid #2e3038;
+        font-size: 8px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        font-family: "DM Sans", sans-serif;
+      }
+      .client-badge {
+        font-family: "DM Sans", sans-serif;
+        font-weight: 500;
+        font-size: 8px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(124, 156, 255, 0.18);
+        color: #c7d2fe;
+        flex-shrink: 0;
+      }
+      .client-body {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 72px minmax(0, 1fr) minmax(0, 1.35fr);
+        min-height: 0;
+      }
+      .client-folders {
+        background: #16171c;
+        border-right: 1px solid #0a0a0c;
+        padding: 8px 6px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 8px;
+        color: #94a3b8;
+        line-height: 1.35;
+      }
+      .client-folders .acct {
+        font-size: 7px;
+        color: #64748b;
+        margin-bottom: 10px;
+        word-break: break-all;
+        line-height: 1.25;
+      }
+      .folder {
+        padding: 5px 6px;
+        border-radius: 4px;
+        margin-bottom: 2px;
+        cursor: default;
+      }
+      .folder.active {
+        background: rgba(124, 156, 255, 0.12);
+        color: #e2e8f0;
+        font-weight: 600;
+      }
+      .folder.sent-hl {
+        color: #cbd5e1;
+      }
+      .client-list {
+        background: #1a1b1f;
+        border-right: 1px solid #0a0a0c;
+        overflow-y: auto;
+        min-width: 0;
+      }
+      .client-list-head {
+        padding: 6px 8px;
+        font-size: 7px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        border-bottom: 1px solid #2e3038;
+      }
+      .thread {
+        padding: 8px 10px;
+        border-bottom: 1px solid #24262e;
+        cursor: default;
+        font-family: "DM Sans", sans-serif;
+        overflow: hidden;
+      }
+      .thread:hover {
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .thread.active {
+        background: #25262e;
+        border-left: 3px solid var(--accent);
+        padding-left: 7px;
+      }
+      .thread .t-from {
+        font-size: 9px;
+        font-weight: 600;
+        color: #f1f5f9;
+        margin-bottom: 2px;
+      }
+      .thread .t-from.unread::after {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-left: 6px;
+        vertical-align: 1px;
+      }
+      .thread .t-subj {
+        font-size: 8px;
+        color: #e2e8f0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .thread .t-snip {
+        font-size: 7px;
+        color: #64748b;
+        margin-top: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .thread .t-time {
+        float: right;
+        font-size: 7px;
+        color: #64748b;
+        margin-left: 6px;
+      }
+      .client-read {
+        background: #13141a;
+        overflow-y: auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        font-family: "DM Sans", sans-serif;
+      }
+      .read-toolbar {
+        padding: 6px 10px;
+        border-bottom: 1px solid #2e3038;
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+      .read-toolbar button {
+        font-size: 7px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        border: 1px solid #3f4250;
+        background: #1e1f26;
+        color: #cbd5e1;
+        font-family: "DM Sans", sans-serif;
+      }
+      .read-inner {
+        padding: 10px 12px 12px;
+        flex: 1;
+      }
+      .m-subj {
+        font-size: clamp(10px, 1.15vw, 12px);
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 8px;
+        line-height: 1.25;
+      }
+      .m-meta {
+        font-size: 8px;
+        color: var(--muted);
+        line-height: 1.5;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border);
+      }
+      .m-meta strong {
+        color: #cbd5e1;
+        font-weight: 500;
+      }
+      .m-body {
+        font-size: clamp(8px, 0.95vw, 10px);
+        line-height: 1.55;
+        color: #d4d4d8;
+        white-space: pre-wrap;
+      }
+      .m-attach {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border);
+        font-size: 8px;
+        color: var(--muted);
+      }
+      .m-attach span.file-pill {
+        display: inline-block;
+        margin-top: 4px;
+        margin-right: 6px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 7px;
+        color: var(--accent2);
+      }
+      .m-placeholder {
+        font-size: 9px;
+        color: #64748b;
+        font-style: italic;
+        line-height: 1.45;
+      }
+      .code-section {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .side-head {
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 8px;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+      .side-head strong {
+        color: var(--accent2);
+      }
+      .code-wrap {
+        flex: 1;
+        overflow: auto;
+        padding: 6px 10px 8px;
+        font-size: clamp(6px, 0.75vw, 8px);
+        line-height: 1.5;
+      }
+      .code-wrap pre {
+        margin: 0;
+        white-space: pre;
+      }
+      .kw {
+        color: #f472b6;
+      }
+      .fn {
+        color: #7dd3fc;
+      }
+      .str {
+        color: #86efac;
+      }
+      .com {
+        color: #64748b;
+      }
+      .line {
+        display: block;
+        padding: 1px 0 1px 6px;
+        margin-left: -6px;
+        border-radius: 3px;
+        border-left: 2px solid transparent;
+      }
+      .line.active {
+        background: var(--line-hl);
+        border-left-color: var(--accent);
+      }
+      .muted {
+        color: var(--muted);
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage-wrap">
+      <div class="stage">
+        <div class="main">
+          <div class="main-head"><i aria-hidden="true"></i> Daily brief · calendar to inbox</div>
+          <div class="main-body">
+            <div class="block">
+              <h3>Schedule job</h3>
+              <div class="inner" id="inbox"></div>
+            </div>
+            <div class="block">
+              <h3>Calendar pull</h3>
+              <div class="inner" id="tree"></div>
+            </div>
+            <div class="block">
+              <h3>Digest email</h3>
+              <div class="inner" id="sent"></div>
+            </div>
+          </div>
+        </div>
+        <div class="side">
+          <div class="mail-section">
+            <div class="client-top">
+              <div class="client-brand">Mail<span>Demo</span></div>
+              <div class="client-search">Search mail</div>
+              <div class="client-badge" id="mailBadge">—</div>
+            </div>
+            <div class="client-body">
+              <aside class="client-folders" id="clientFolders"></aside>
+              <div class="client-list" id="clientList"></div>
+              <div class="client-read" id="clientRead"></div>
+            </div>
+          </div>
+          <div class="code-section">
+            <div class="side-head"><strong>dailyBrief.ts</strong> — calendar read, digest build, send</div>
+            <div class="code-wrap">
+              <pre id="code"></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">~28s loop · English daily digest demo</p>
+    <script>
+      if (/[?&]embed=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add("embed");
+      }
+    </script>
+    <script>
+      (function () {
+        var LOOP_MS = 28000;
+        var TICK_MS = 35;
+
+        var CODE_LINES = [
+          { n: 1, text: '<span class="kw">import</span> { getCalendarEvents } <span class="kw">from</span> <span class="str">"./calendar"</span>;' },
+          { n: 2, text: '<span class="kw">import</span> { buildDailyDigest, sendEmail } <span class="kw">from</span> <span class="str">"./mailer"</span>;' },
+          { n: 3, text: "" },
+          { n: 4, text: '<span class="kw">export async function</span> <span class="fn">runDailyBrief</span>(userId: string, tz: string) {' },
+          { n: 5, text: '  <span class="kw">const</span> events = <span class="kw">await</span> <span class="fn">getCalendarEvents</span>(userId, <span class="str">"primary"</span>, tz); <span class="com">// today, work hours</span>' },
+          { n: 6, text: '  <span class="kw">const</span> digest = <span class="fn">buildDailyDigest</span>(events); <span class="com">// grouped + prep notes</span>' },
+          { n: 7, text: '  <span class="com">// e.g. meetings, focus blocks, deadlines from calendar metadata</span>' },
+          { n: 8, text: '  <span class="kw">await</span> <span class="fn">sendEmail</span>(user.email, digest.subject, digest.html);' },
+          { n: 9, text: '  <span class="com">// cron: Mon–Fri 7:00 AM in the recipient timezone</span>' },
+          { n: 10, text: "}" },
+        ];
+
+        function renderCode(activeLine) {
+          var pre = document.getElementById("code");
+          pre.innerHTML = CODE_LINES.map(function (line) {
+            var cls = line.n === activeLine ? "line active" : "line";
+            var body = line.text || "&nbsp;";
+            return '<span class="' + cls + '">' + body + "</span>";
+          }).join("\n");
+        }
+
+        function readChrome(bodyHtml) {
+          return (
+            '<div class="read-toolbar">' +
+            '<button type="button">Reply</button><button type="button">Forward</button><button type="button">Archive</button><button type="button">⋮</button>' +
+            '</div><div class="read-inner">' +
+            bodyHtml +
+            "</div>"
+          );
+        }
+
+        function folderChrome(acct) {
+          var a = acct || "you@company.com";
+          return (
+            '<div class="acct">' +
+            a +
+            '</div><div class="folder active">Inbox</div><div class="folder">Starred</div><div class="folder">Snoozed</div><div class="folder">Sent</div><div class="folder">Drafts</div>'
+          );
+        }
+
+        var READ_IDLE =
+          '<p class="m-placeholder">Your real inbox (Gmail, Outlook, etc.): every morning the digest lands here with everything pulled from your calendar.</p>';
+
+        var READ_DIGEST =
+          '<div class="m-subj">Your daily debrief — Thursday, April 16</div>' +
+          '<div class="m-meta"><strong>From:</strong> daily@notifications.fighurai.com<br/>' +
+          "<strong>To:</strong> alex.chen@acmecorp.com<br/>" +
+          "<strong>Schedule:</strong> Automated read of your primary work calendar</div>" +
+          "<div class=\"m-body\">Good morning Alex,\n\n" +
+          "Here is your debrief for the day — everything you need from your calendar:\n\n" +
+          "• 9:00–9:30 AM — Engineering stand-up (Google Meet)\n" +
+          "• 11:00 AM — Client review · Riverside deck (Conference room B)\n" +
+          "• 12:30–1:15 PM — Lunch with finance (Building cafe)\n" +
+          "• 2:00–3:30 PM — Focus block — no meetings scheduled\n" +
+          "• 4:00 PM — Submit expense report (deadline on calendar)\n" +
+          "• 5:30 PM — Ship weekly metrics email\n\n" +
+          "Prep notes: Room B has a display adapter in the drawer. Your 11am has two optional attendees — they have not accepted yet.\n\n" +
+          "Have a clear day,\n" +
+          "FIGHURAI — daily debrief</div>" +
+          '<div class="m-attach">Source: primary calendar · synced read-only · sent Mon–Fri 7:00 AM your time</div>';
+
+        var READ_BUILDING =
+          '<p class="m-placeholder">Building today’s digest from your calendar events… the full email will appear here as soon as send completes.</p>';
+
+        var READ_SUMMARY =
+          '<div class="m-subj">Same automation, every weekday</div>' +
+          '<div class="m-meta"><strong>What you get:</strong> one email per morning · <strong>What we read:</strong> your calendar (and optional task list)</div>' +
+          "<div class=\"m-body\">We can wire this to Google Calendar, Microsoft 365, or another provider you use. The left side is the job that runs on a schedule; the right is exactly how it shows up in your inbox — no extra app required.</div>";
+
+        var LIST_IDLE =
+          '<div class="client-list-head">Primary</div>' +
+          '<div class="thread"><span class="t-time">—</span><div class="t-from">No digest yet</div><div class="t-subj">Next send: 7:00 AM</div><div class="t-snip">Automation is idle until the morning run</div></div>';
+
+        var LIST_DIGEST =
+          '<div class="client-list-head">Inbox · 1 unread</div>' +
+          '<div class="thread active"><span class="t-time">7:01</span><div class="t-from unread">daily@notifications.fighurai.com</div><div class="t-subj">Your daily debrief — Thursday, April 16</div><div class="t-snip">Good morning Alex, Here is your debrief for the day…</div></div>' +
+          '<div class="thread"><span class="t-time">Apr 15</span><div class="t-from">daily@notifications.fighurai.com</div><div class="t-subj">Your daily debrief — Wednesday, April 15</div><div class="t-snip">Good morning Alex, Here is your debrief…</div></div>';
+
+        var LIST_TWO =
+          '<div class="client-list-head">Inbox · 2 unread</div>' +
+          '<div class="thread active"><span class="t-time">7:01</span><div class="t-from unread">daily@notifications.fighurai.com</div><div class="t-subj">Your daily debrief — Thursday, April 16</div><div class="t-snip">Good morning Alex, Here is your debrief for the day…</div></div>' +
+          '<div class="thread"><span class="t-time">7:01</span><div class="t-from unread">hr@acmecorp.com</div><div class="t-subj">Open enrollment reminder</div><div class="t-snip">Please review benefits by Friday…</div></div>';
+
+        var STEPS = [
+          {
+            t: 0,
+            inbox:
+              '<div class="row"><span class="tag">CRON</span><span>Weekday job · next run 7:00 AM (America/New_York)</span></div>',
+            tree: '<div class="tree">Calendar API: <span class="hl">idle</span> · no fetch until window opens</div>',
+            sent: '<span class="muted">—</span>',
+            line: 4,
+            badge: "Inbox",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_IDLE,
+            readBody: READ_IDLE,
+          },
+          {
+            t: 2200,
+            inbox:
+              '<div class="row"><span class="tag">RUN</span><span>Job started · user alex.chen@acmecorp.com</span></div>',
+            tree: '<div class="tree">GET /calendar/v3/primary/events?timeMin=…<br/><span class="hl">OAuth token refreshed</span></div>',
+            sent: '<span class="muted">Composing…</span>',
+            line: 5,
+            badge: "Syncing",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_IDLE,
+            readBody: READ_BUILDING,
+          },
+          {
+            t: 4800,
+            inbox:
+              '<div class="row"><span class="tag">RUN</span><span>Job started · user alex.chen@acmecorp.com</span></div><div class="row"><span class="tag">CAL</span><span>6 events today · 2 marked busy</span></div>',
+            tree:
+              '<div class="tree">Today (Apr 16)<br/>  ├─ 09:00 stand-up<br/>  ├─ 11:00 client review<br/>  ├─ 12:30 lunch · finance<br/>  ├─ 14:00 focus block<br/>  ├─ 16:00 expense deadline<br/>  └─ 17:30 metrics email</div>',
+            sent: '<span class="muted">Building HTML body…</span>',
+            line: 6,
+            badge: "Building",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_IDLE,
+            readBody: READ_BUILDING,
+          },
+          {
+            t: 7200,
+            inbox:
+              '<div class="row"><span class="tag">RUN</span><span>Job started · user alex.chen@acmecorp.com</span></div><div class="row"><span class="tag">CAL</span><span>6 events today · 2 marked busy</span></div>',
+            tree:
+              '<div class="tree">Digest sections: <span class="hl">timeline</span> · <span class="hl">prep notes</span> · <span class="hl">deadlines</span></div>',
+            sent: '<div class="row"><span class="tag">SMTP</span><span>Queued · message-id assigned</span></div>',
+            line: 8,
+            badge: "Sending",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_DIGEST,
+            readBody: READ_DIGEST,
+          },
+          {
+            t: 10000,
+            inbox:
+              '<div class="row"><span class="tag">OK</span><span>Delivered · SES 250 OK</span></div><div class="row"><span class="tag">CAL</span><span>6 events summarized</span></div>',
+            tree:
+              '<div class="tree">Logged: <span class="hl">digest_2025-04-16.html</span> (archive)</div>',
+            sent: '<div class="row"><span class="tag">OK</span><span>Daily brief sent · 7:01 AM</span></div>',
+            line: 8,
+            badge: "Delivered",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_DIGEST,
+            readBody: READ_DIGEST,
+          },
+          {
+            t: 13500,
+            inbox:
+              '<div class="row"><span class="tag">OK</span><span>Delivered · SES 250 OK</span></div><div class="row"><span class="tag">NEXT</span><span>Tomorrow 7:00 AM · same pipeline</span></div>',
+            tree:
+              '<div class="tree">Next fetch window: <span class="hl">Apr 17 06:55–07:05</span> local</div>',
+            sent: '<div class="row"><span class="tag">OK</span><span>Daily brief sent · 7:01 AM</span></div>',
+            line: 9,
+            badge: "Inbox",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_TWO,
+            readBody: READ_DIGEST,
+          },
+          {
+            t: 17500,
+            inbox:
+              '<div class="row"><span class="tag">SUMMARY</span><span>1 user · 1 digest · 0 errors this run</span></div>',
+            tree:
+              '<div class="tree">Provider: <span class="hl">Google Calendar</span> · Mail: <span class="hl">Amazon SES</span></div>',
+            sent: '<div class="row"><span class="tag">OK</span><span>Archive + metrics recorded</span></div>',
+            line: 10,
+            badge: "Daily",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_TWO,
+            readBody: READ_SUMMARY,
+          },
+          {
+            t: 22000,
+            inbox:
+              '<div class="row"><span class="tag">IDLE</span><span>Waiting for next weekday 7:00 AM</span></div>',
+            tree: '<div class="tree">Calendar API: <span class="hl">idle</span></div>',
+            sent: '<span class="muted">—</span>',
+            line: 4,
+            badge: "Inbox",
+            acct: "alex.chen@acmecorp.com",
+            listHtml: LIST_DIGEST,
+            readBody: READ_DIGEST,
+          },
+        ];
+
+        var phase = 0;
+        var inboxEl = document.getElementById("inbox");
+        var treeEl = document.getElementById("tree");
+        var sentEl = document.getElementById("sent");
+        var clientFoldersEl = document.getElementById("clientFolders");
+        var clientListEl = document.getElementById("clientList");
+        var clientReadEl = document.getElementById("clientRead");
+        var mailBadgeEl = document.getElementById("mailBadge");
+
+        function apply(elapsed) {
+          var step = STEPS[0];
+          for (var i = STEPS.length - 1; i >= 0; i--) {
+            if (elapsed >= STEPS[i].t) {
+              step = STEPS[i];
+              break;
+            }
+          }
+          inboxEl.innerHTML = step.inbox;
+          treeEl.innerHTML = step.tree;
+          sentEl.innerHTML = step.sent;
+          clientFoldersEl.innerHTML = folderChrome(step.acct);
+          clientListEl.innerHTML = step.listHtml;
+          clientReadEl.innerHTML = readChrome(step.readBody);
+          mailBadgeEl.textContent = step.badge;
+          renderCode(step.line);
+        }
+
+        function tick() {
+          var elapsed = phase * TICK_MS;
+          if (elapsed >= LOOP_MS) {
+            phase = 0;
+            apply(0);
+            setTimeout(tick, TICK_MS);
+            return;
+          }
+          apply(elapsed);
+          phase++;
+          setTimeout(tick, TICK_MS);
+        }
+
+        renderCode(4);
+        apply(0);
+        setTimeout(tick, 500);
+      })();
+    </script>
+  </body>
+</html>

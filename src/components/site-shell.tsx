@@ -9,7 +9,6 @@ import { BOOKING_URL } from "@/lib/site-links";
 const tabs = [
   { href: "/", label: "Ask" },
   { href: "/consulting", label: "Consulting" },
-  { href: "/membership", label: "Membership" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ] as const;

@@ -2,11 +2,11 @@
 
 import Markdown from "react-markdown";
 import type { MouseEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { ChatMessage } from "@/lib/chat-types";
-import { AuthPanel } from "@/components/auth-panel";
-import { BOOKING_URL, FIGHUR_FINANCE_URL, fighurFinanceLinkLabel } from "@/lib/site-links";
+import { resolveBookingHref } from "@/lib/booking-from-prompt";
+import { BOOKING_URL } from "@/lib/site-links";
 import {
   deriveTitle,
   loadConversations,
@@ -48,13 +48,6 @@ function formatTime(ts: number) {
   }
 }
 
-type ChatModelRow = {
-  id: string;
-  label: string;
-  provider: string;
-  available: boolean;
-};
-
 export function PromptStudioChat() {
   const [conversations, setConversations] = useState<SavedConversation[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -66,12 +59,6 @@ export function PromptStudioChat() {
   const [listening, setListening] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [studioOpen, setStudioOpen] = useState(false);
-  const [chatModels, setChatModels] = useState<ChatModelRow[]>([]);
-  const [chatModelId, setChatModelId] = useState("");
-  const [useWeb, setUseWeb] = useState(false);
-  const [modelsLoaded, setModelsLoaded] = useState(false);
-
   const abortRef = useRef<AbortController | null>(null);
   const promptifyAbortRef = useRef<AbortController | null>(null);
   const speechRef = useRef<SpeechSession | null>(null);
@@ -86,16 +73,6 @@ export function PromptStudioChat() {
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
-
-  /** Close FIGHURAI menu on Escape only — no document-level click listeners (they interfered with the chat composer). */
-  useEffect(() => {
-    if (!studioOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setStudioOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [studioOpen]);
 
   useEffect(() => {
     const list = loadConversations();
@@ -114,39 +91,14 @@ export function PromptStudioChat() {
     setHydrated(true);
   }, []);
 
+  // Follow new tokens without stacking smooth-scroll animations (that reads as “static” / janky).
   useEffect(() => {
-    if (!hydrated) return;
-    void fetch("/api/chat/models")
-      .then((r) => r.json())
-      .then((data: { models: ChatModelRow[]; defaultModel: string }) => {
-        setChatModels(data.models);
-        const saved =
-          typeof localStorage !== "undefined" ? localStorage.getItem("fighurai-chat-model") : null;
-        const pick =
-          (saved && data.models.some((m) => m.id === saved && m.available) && saved) ||
-          data.models.find((m) => m.available)?.id ||
-          data.defaultModel;
-        setChatModelId(pick);
-        setModelsLoaded(true);
-      })
-      .catch(() => setModelsLoaded(true));
-    if (typeof localStorage !== "undefined" && localStorage.getItem("fighurai-chat-use-web") === "1") {
-      setUseWeb(true);
-    }
-  }, [hydrated]);
-
-  useEffect(() => {
-    if (!hydrated || !chatModelId) return;
-    localStorage.setItem("fighurai-chat-model", chatModelId);
-  }, [hydrated, chatModelId]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem("fighurai-chat-use-web", useWeb ? "1" : "0");
-  }, [hydrated, useWeb]);
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollTo({
+      top: el.scrollHeight,
+      behavior: pending ? "auto" : "smooth",
+    });
   }, [messages, pending]);
 
   useEffect(() => {
@@ -282,11 +234,13 @@ export function PromptStudioChat() {
       role: "assistant",
       content: "",
     };
-    setMessages((m) => {
-      const next: ChatMessage[] = [...m, userMsg, assistantPlaceholder];
-      messagesRef.current = next;
-      return next;
-    });
+    // Build next transcript synchronously — do not read messagesRef only after
+    // setMessages(updater), because the updater may not run before the fetch
+    // body is built, leaving messages[] empty and /api/chat returning 400.
+    const base = messagesRef.current;
+    const nextMessages: ChatMessage[] = [...base, userMsg, assistantPlaceholder];
+    messagesRef.current = nextMessages;
+    setMessages(nextMessages);
     setInput("");
     setError(null);
     setPending(true);
@@ -295,7 +249,7 @@ export function PromptStudioChat() {
     abortRef.current = controller;
     const reqTid = window.setTimeout(() => controller.abort(), 120_000);
 
-    const history = messagesRef.current
+    const history = nextMessages
       .filter((m) => m.id !== assistantId)
       .map(({ role, content }) => ({ role, content }));
 
@@ -303,11 +257,7 @@ export function PromptStudioChat() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: history,
-          ...(chatModelId ? { model: chatModelId } : {}),
-          useWeb,
-        }),
+        body: JSON.stringify({ messages: history }),
         signal: controller.signal,
       });
 
@@ -325,16 +275,37 @@ export function PromptStudioChat() {
 
       const decoder = new TextDecoder();
       let acc = "";
+      let rafId: number | null = null;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        acc += decoder.decode(value, { stream: true });
+      const flushStreamToUi = () => {
+        rafId = null;
+        const snapshot = acc;
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.id === assistantId ? { ...msg, content: acc } : msg,
+            msg.id === assistantId ? { ...msg, content: snapshot } : msg,
           ),
         );
+      };
+
+      const scheduleStreamFlush = () => {
+        if (rafId !== null) return;
+        rafId = requestAnimationFrame(flushStreamToUi);
+      };
+
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          acc += decoder.decode(value, { stream: true });
+          scheduleStreamFlush();
+        }
+        acc += decoder.decode();
+      } finally {
+        if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+        flushStreamToUi();
       }
 
       // Some providers can end a stream with no visible tokens; never leave users with a blank assistant bubble.
@@ -364,7 +335,7 @@ export function PromptStudioChat() {
       abortRef.current = null;
       sendInFlightRef.current = false;
     }
-  }, [input, pending, translatingSpeech, activeId, useWeb, chatModelId]);
+  }, [input, pending, translatingSpeech, activeId]);
 
   const toggleListen = useCallback(() => {
     if (listening && speechRef.current) {
@@ -412,6 +383,21 @@ export function PromptStudioChat() {
   }, [listening, stopAll, streamPromptify]);
 
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+
+  const lastUserContent = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m?.role === "user") return m.content;
+    }
+    return "";
+  }, [messages]);
+
+  /** Acuity opens with `datetime=` when the box or last user message includes a parseable date+time */
+  const bookingFromPrompt = useMemo(
+    () => resolveBookingHref(BOOKING_URL, input.trim() || lastUserContent),
+    [input, lastUserContent],
+  );
+  const bookingHref = bookingFromPrompt.href;
 
   const copyLast = useCallback(async () => {
     if (!lastAssistant?.content) return;
@@ -478,7 +464,6 @@ export function PromptStudioChat() {
           </ul>
         )}
       </div>
-      <AuthPanel />
     </>
   );
 
@@ -528,24 +513,7 @@ export function PromptStudioChat() {
         </div>
 
         <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-3 pb-2 pt-3 sm:px-4 sm:pt-4 md:pt-6">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 sm:mb-4">
-            <a
-              href={BOOKING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex shrink-0 items-center gap-2 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/12 px-3.5 py-1.5 text-xs font-semibold text-[var(--accent)] shadow-[0_0_20px_var(--accent-glow)]/30 transition hover:bg-[var(--accent)]/20"
-            >
-              Book a session
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
-                <path
-                  d="M7 17L17 7M17 7H9M17 7V15"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </a>
+          <div className="mb-3 flex flex-wrap items-center justify-end gap-2 sm:mb-4">
             <button
               type="button"
               onClick={copyLast}
@@ -569,7 +537,7 @@ export function PromptStudioChat() {
                   Services, booking, and how to work with us — this assistant only answers about FIGHURAI.
                 </p>
                 <a
-                  href={BOOKING_URL}
+                  href={bookingHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-foreground)] shadow-[0_0_28px_var(--accent-glow)] transition hover:brightness-110"
@@ -585,6 +553,17 @@ export function PromptStudioChat() {
                     />
                   </svg>
                 </a>
+                {bookingFromPrompt.parsedTime ? (
+                  <p className="mt-2 max-w-md text-xs leading-snug text-[var(--accent)]">
+                    Acuity will open with your stated date and time prefilled — pick the exact slot that still
+                    works there.
+                  </p>
+                ) : (
+                  <p className="mt-2 max-w-md text-xs leading-snug text-[var(--text-faint)]">
+                    Tip: type a day and time in the box (e.g. &quot;Thu 2:30pm&quot;) before booking — we pass it
+                    to the scheduler when we can read it.
+                  </p>
+                )}
                 <div className="mt-6 flex max-w-lg flex-wrap justify-center gap-2">
                   {SUGGESTIONS.map((s) => (
                     <button
@@ -637,71 +616,17 @@ export function PromptStudioChat() {
 
           <div className="relative z-20 shrink-0 pb-1">
             <div className="relative z-10 rounded-2xl border border-white/[0.12] bg-[var(--bg-elevated)]/90 p-1 shadow-[0_12px_48px_-20px_rgba(0,0,0,0.75),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-md">
-              <div className="relative border-b border-white/[0.06] px-2 py-1 sm:px-3">
-                <div className="relative inline-block">
-                  <button
-                    type="button"
-                    onClick={() => setStudioOpen((o) => !o)}
-                    aria-expanded={studioOpen}
-                    aria-haspopup="listbox"
-                    aria-label="Choose studio or app"
-                    className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-[var(--text-muted)] transition hover:bg-white/[0.06] hover:text-[var(--text-primary)]"
-                  >
-                    <span className="font-semibold text-[var(--text-primary)]">FIGHURAI</span>
-                    <span className="font-normal text-[var(--text-faint)]">Ask</span>
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      className={`text-[var(--text-faint)] transition ${studioOpen ? "rotate-180" : ""}`}
-                      aria-hidden
-                    >
-                      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  {studioOpen ? (
-                    <div
-                      role="listbox"
-                      className="absolute left-0 top-full z-30 mt-1 min-w-[min(100vw-2rem,16rem)] rounded-xl border border-white/[0.1] bg-[var(--bg-deep)] py-1 shadow-[0_16px_48px_-12px_rgba(0,0,0,0.85)] ring-1 ring-white/[0.06]"
-                    >
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={true}
-                        className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-xs text-[var(--text-primary)] hover:bg-white/[0.06]"
-                        onClick={() => setStudioOpen(false)}
-                      >
-                        <span className="w-4 text-[var(--accent)]">✓</span>
-                        <span>
-                          <span className="font-medium">FIGHURAI Ask</span>
-                          <span className="mt-0.5 block text-[0.65rem] font-normal text-[var(--text-faint)]">
-                            Book &amp; business Q&amp;A (this page)
-                          </span>
-                        </span>
-                      </button>
-                      <button
-                        type="button"
-                        role="option"
-                        aria-selected={false}
-                        className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-xs text-[var(--text-muted)] hover:bg-white/[0.06] hover:text-[var(--text-primary)]"
-                        onClick={() => {
-                          setStudioOpen(false);
-                          window.open(FIGHUR_FINANCE_URL, "_blank", "noopener,noreferrer");
-                        }}
-                      >
-                        <span className="w-4 shrink-0" aria-hidden />
-                        <span className="min-w-0 flex-1">
-                          <span className="font-medium text-[var(--text-primary)]">FighurFinance</span>
-                          <span className="mt-0.5 block text-[0.65rem] font-normal text-[var(--text-faint)]">
-                            Financial dashboard · new tab ({fighurFinanceLinkLabel(FIGHUR_FINANCE_URL)})
-                          </span>
-                        </span>
-                      </button>
-                    </div>
-                  ) : null}
+              <div className="relative border-b border-white/[0.06] px-2 py-1.5 sm:px-3">
+                <div
+                  className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5 px-2 py-1 text-xs text-[var(--text-muted)]"
+                  role="status"
+                  aria-label="FIGHURAI Ask, business Q and A"
+                >
+                  <span className="font-semibold text-[var(--text-primary)]">FIGHURAI</span>
+                  <span className="font-normal text-[var(--text-faint)]">Ask</span>
+                  <span className="font-normal text-[0.65rem] text-[var(--text-faint)]">
+                    · Book &amp; business Q&amp;A
+                  </span>
                 </div>
               </div>
               <form
@@ -755,55 +680,6 @@ export function PromptStudioChat() {
                 </button>
 
                 <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-                  <label className="sr-only" htmlFor="fighurai-chat-model">
-                    Model
-                  </label>
-                  <div className="relative max-w-[min(100%,12rem)] sm:max-w-[14rem]">
-                    <select
-                      id="fighurai-chat-model"
-                      value={chatModelId}
-                      onChange={(e) => setChatModelId(e.target.value)}
-                      disabled={pending || translatingSpeech || !modelsLoaded}
-                      className="w-full cursor-pointer appearance-none rounded-full border border-white/[0.1] bg-white/[0.04] py-1.5 pl-2.5 pr-8 text-left text-xs font-medium text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition hover:border-white/[0.18] hover:bg-white/[0.06] focus:border-[var(--accent)]/35 focus:outline-none focus:ring-1 focus:ring-[var(--accent)]/25 disabled:cursor-not-allowed disabled:opacity-40"
-                    >
-                      {chatModels.length === 0 ? (
-                        <option value="">Default model</option>
-                      ) : (
-                        chatModels.map((m) => (
-                          <option key={m.id} value={m.id} disabled={!m.available}>
-                            {m.label}
-                            {!m.available ? " · add key" : ""}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                    <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-faint)]">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden>
-                        <path
-                          d="M6 9l6 6 6-6"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setUseWeb((w) => !w)}
-                    disabled={pending || translatingSpeech}
-                    title="Ground replies with DuckDuckGo snippets for your last message"
-                    className={`shrink-0 rounded-full border px-2.5 py-1.5 text-xs font-medium transition disabled:opacity-40 ${
-                      useWeb
-                        ? "border-[var(--accent)]/40 bg-[var(--accent)]/12 text-[var(--accent)] shadow-[inset_0_0_0_1px_rgba(45,212,191,0.15)]"
-                        : "border-white/[0.1] bg-white/[0.04] text-[var(--text-muted)] hover:border-white/[0.18] hover:bg-white/[0.06] hover:text-[var(--text-primary)]"
-                    }`}
-                  >
-                    Web
-                  </button>
-
                   {busy ? (
                     <button
                       type="button"
@@ -830,15 +706,16 @@ export function PromptStudioChat() {
             ) : (
               <p className="mt-2 text-center text-[0.65rem] text-[var(--text-faint)]">
                 <a
-                  href={BOOKING_URL}
+                  href={bookingHref}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-medium text-[var(--accent)] underline-offset-2 hover:underline"
                 >
                   Book a session
                 </a>{" "}
-                opens the calendar · Chats saved in this browser · Speech refines your message · Chat →{" "}
-                <code className="text-[var(--text-muted)]">/api/chat</code>
+                opens Acuity
+                {bookingFromPrompt.parsedTime ? " with your typed date & time when recognized" : ""} · Chats
+                saved in this browser · Speech refines your message
               </p>
             )}
           </div>

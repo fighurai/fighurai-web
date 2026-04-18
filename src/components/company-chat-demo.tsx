@@ -1,7 +1,6 @@
-/** Interactive demo: Cursor-style editor + live app preview (public/videos/chatbot-build-recorder.html). */
+/** Company-only knowledge chat: looks like chat, answers only from org docs (public/videos/company-chat-demo.html). */
 
-type SparkDemoVideoProps = {
-  /** Small label above the title (e.g. “Demo”) */
+type CompanyChatDemoProps = {
   eyebrow?: string;
   title?: string;
   description?: string;
@@ -9,16 +8,16 @@ type SparkDemoVideoProps = {
   headingId?: string;
 };
 
-const DEMO_IFRAME_SRC = "/videos/chatbot-build-recorder.html?embed=1";
+const IFRAME_SRC = "/videos/company-chat-demo.html?embed=1";
 
-export function SparkDemoVideo({
+export function CompanyChatDemo({
   eyebrow = "Demo",
-  title = "Applications",
+  title = "Company knowledge chat",
   description =
-    "Illustration of how we work: building in Cursor with a live preview beside it — wiring a chatbot UI and API while the conversation updates in real time.",
+    "A chat experience that mirrors what people already know — threads, composer, crisp replies — but the model is grounded strictly in your company handbook, policies, wikis, and runbooks. No public-web answers unless you choose to add them later.",
   className = "",
-  headingId = "membership-applications-demo-heading",
-}: SparkDemoVideoProps) {
+  headingId = "company-chat-demo-heading",
+}: CompanyChatDemoProps) {
   return (
     <section className={`${className}`.trim()} aria-labelledby={headingId}>
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -39,8 +38,8 @@ export function SparkDemoVideo({
           <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.1] bg-black/40 ring-1 ring-white/[0.05]">
             <div className="relative aspect-video w-full max-h-[70vh] min-h-[200px]">
               <iframe
-                title="Demo: building a chatbot in Cursor with live app preview"
-                src={DEMO_IFRAME_SRC}
+                title="Demo: internal company chat grounded on organization documents only"
+                src={IFRAME_SRC}
                 className="absolute inset-0 h-full w-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -48,7 +47,7 @@ export function SparkDemoVideo({
             </div>
           </div>
           <p className="mt-3 text-center text-[0.65rem] text-[var(--text-faint)]">
-            Sample animation for illustration — your scope and stack would be defined together.
+            Sample workspace (Northwind Internal) for illustration — your branding and document set would be yours.
           </p>
         </div>
       </div>

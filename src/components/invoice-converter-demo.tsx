@@ -1,7 +1,6 @@
-/** Interactive demo: Cursor-style editor + live app preview (public/videos/chatbot-build-recorder.html). */
+/** Invoice extraction demo: PDFs → Excel rows with rule-based categories (public/videos/invoice-converter-demo.html). */
 
-type SparkDemoVideoProps = {
-  /** Small label above the title (e.g. “Demo”) */
+type InvoiceConverterDemoProps = {
   eyebrow?: string;
   title?: string;
   description?: string;
@@ -9,16 +8,16 @@ type SparkDemoVideoProps = {
   headingId?: string;
 };
 
-const DEMO_IFRAME_SRC = "/videos/chatbot-build-recorder.html?embed=1";
+const IFRAME_SRC = "/videos/invoice-converter-demo.html?embed=1";
 
-export function SparkDemoVideo({
+export function InvoiceConverterDemo({
   eyebrow = "Demo",
-  title = "Applications",
+  title = "Invoice → Excel",
   description =
-    "Illustration of how we work: building in Cursor with a live preview beside it — wiring a chatbot UI and API while the conversation updates in real time.",
+    "Pull invoices from your company’s documents (scans, email PDFs, batches), extract line items and totals, then land everything in a spreadsheet with categories driven by your rules — vendor lists, keywords, GL codes, and amount thresholds.",
   className = "",
-  headingId = "membership-applications-demo-heading",
-}: SparkDemoVideoProps) {
+  headingId = "invoice-converter-demo-heading",
+}: InvoiceConverterDemoProps) {
   return (
     <section className={`${className}`.trim()} aria-labelledby={headingId}>
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -39,8 +38,8 @@ export function SparkDemoVideo({
           <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.1] bg-black/40 ring-1 ring-white/[0.05]">
             <div className="relative aspect-video w-full max-h-[70vh] min-h-[200px]">
               <iframe
-                title="Demo: building a chatbot in Cursor with live app preview"
-                src={DEMO_IFRAME_SRC}
+                title="Demo: invoices from documents to categorized Excel export"
+                src={IFRAME_SRC}
                 className="absolute inset-0 h-full w-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -48,7 +47,7 @@ export function SparkDemoVideo({
             </div>
           </div>
           <p className="mt-3 text-center text-[0.65rem] text-[var(--text-faint)]">
-            Sample animation for illustration — your scope and stack would be defined together.
+            Illustrative pipeline — OCR vendors, validation rules, and file formats depend on your ops.
           </p>
         </div>
       </div>

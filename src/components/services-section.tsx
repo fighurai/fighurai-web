@@ -26,8 +26,9 @@ export function ServicesSection() {
             Services
           </h2>
           <p className="mt-4 text-[var(--text-muted)]">
-            The same pillars you expect from a serious AI practice — delivered with a
-            consultation-first rhythm instead of a generic slide deck.
+            The same pillars you expect from a serious AI practice — discovery-led first,
+            with scoped build and automation when the engagement needs something running —
+            not slide-theatre alone.
           </p>
         </div>
         <ul className="mt-12 grid gap-4 sm:grid-cols-2">

@@ -3,6 +3,8 @@ import { DM_Sans, Fraunces, Geist_Mono } from "next/font/google";
 
 import { getSiteUrl } from "@/lib/site-url";
 
+import { AskChatWidget } from "@/components/ask-chat-widget";
+
 import "./globals.css";
 
 const siteUrl = getSiteUrl();
@@ -50,7 +52,10 @@ export default function RootLayout({
       lang="en"
       className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[var(--bg-deep)]">{children}</body>
+      <body className="min-h-full flex flex-col bg-[var(--bg-deep)]">
+        {children}
+        <AskChatWidget />
+      </body>
     </html>
   );
 }

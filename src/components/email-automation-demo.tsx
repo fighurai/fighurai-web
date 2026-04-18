@@ -1,7 +1,6 @@
-/** Interactive demo: Cursor-style editor + live app preview (public/videos/chatbot-build-recorder.html). */
+/** Daily calendar digest demo: scheduled job → inbox email (public/videos/email-automation-demo.html). */
 
-type SparkDemoVideoProps = {
-  /** Small label above the title (e.g. “Demo”) */
+type EmailAutomationDemoProps = {
   eyebrow?: string;
   title?: string;
   description?: string;
@@ -9,16 +8,16 @@ type SparkDemoVideoProps = {
   headingId?: string;
 };
 
-const DEMO_IFRAME_SRC = "/videos/chatbot-build-recorder.html?embed=1";
+const IFRAME_SRC = "/videos/email-automation-demo.html?embed=1";
 
-export function SparkDemoVideo({
+export function EmailAutomationDemo({
   eyebrow = "Demo",
-  title = "Applications",
+  title = "Daily calendar digest",
   description =
-    "Illustration of how we work: building in Cursor with a live preview beside it — wiring a chatbot UI and API while the conversation updates in real time.",
+    "All English: an automated email every weekday morning that reads your work calendar and sends you a single inbox message — a clear debrief of meetings, focus time, and deadlines. The demo shows the job on the left, your real three-pane inbox on the right, and sample TypeScript underneath.",
   className = "",
-  headingId = "membership-applications-demo-heading",
-}: SparkDemoVideoProps) {
+  headingId = "email-automation-demo-heading",
+}: EmailAutomationDemoProps) {
   return (
     <section className={`${className}`.trim()} aria-labelledby={headingId}>
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -39,8 +38,8 @@ export function SparkDemoVideo({
           <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.1] bg-black/40 ring-1 ring-white/[0.05]">
             <div className="relative aspect-video w-full max-h-[70vh] min-h-[200px]">
               <iframe
-                title="Demo: building a chatbot in Cursor with live app preview"
-                src={DEMO_IFRAME_SRC}
+                title="Demo: daily calendar digest email in your inbox"
+                src={IFRAME_SRC}
                 className="absolute inset-0 h-full w-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -48,7 +47,7 @@ export function SparkDemoVideo({
             </div>
           </div>
           <p className="mt-3 text-center text-[0.65rem] text-[var(--text-faint)]">
-            Sample animation for illustration — your scope and stack would be defined together.
+            Illustrative flow — calendar provider, send time, and tone are configured for your org.
           </p>
         </div>
       </div>

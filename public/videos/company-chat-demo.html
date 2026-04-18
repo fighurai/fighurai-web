@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Company knowledge chat — demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a0b0f;
+        --panel: #111318;
+        --elev: #161922;
+        --border: rgba(255, 255, 255, 0.08);
+        --muted: #8b93a7;
+        --text: #e8ecf4;
+        --accent: #2dd4bf;
+        --accent-dim: rgba(45, 212, 191, 0.12);
+        --user: #1e293b;
+        --bot: #141a24;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", system-ui, sans-serif;
+        overflow: hidden;
+      }
+      .wrap {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: min(2vh, 12px);
+      }
+      .stage {
+        width: min(96vw, calc(96vh * 16 / 9));
+        aspect-ratio: 16 / 9;
+        max-height: 96vh;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(0, 22%) 1fr;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+      }
+      aside {
+        background: var(--panel);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .aside-head {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .kb-list {
+        padding: 8px 10px;
+        flex: 1;
+        overflow-y: auto;
+        font-size: 8px;
+        font-family: "IBM Plex Mono", monospace;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      .kb-list strong {
+        display: block;
+        color: #94a3b8;
+        font-size: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 8px 0 4px;
+      }
+      .kb-list strong:first-child {
+        margin-top: 0;
+      }
+      .kb-item {
+        padding: 4px 6px;
+        border-radius: 4px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .kb-item.on {
+        background: var(--accent-dim);
+        color: var(--accent);
+      }
+      main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: linear-gradient(180deg, #0c0e14 0%, var(--bg) 100%);
+      }
+      .top {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      .top h1 {
+        margin: 0;
+        font-size: clamp(11px, 1.2vw, 14px);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .top .pill {
+        font-size: 8px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--accent-dim);
+        color: var(--accent);
+        border: 1px solid rgba(45, 212, 191, 0.25);
+        white-space: nowrap;
+      }
+      .banner {
+        padding: 6px 14px;
+        font-size: 8px;
+        color: var(--muted);
+        background: rgba(45, 212, 191, 0.06);
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .msgs {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-height: 0;
+      }
+      .bubble {
+        max-width: 88%;
+        padding: 10px 12px;
+        border-radius: 14px;
+        font-size: clamp(9px, 1.05vw, 11px);
+        line-height: 1.5;
+      }
+      .bubble.user {
+        align-self: flex-end;
+        background: var(--user);
+        border: 1px solid var(--border);
+      }
+      .bubble.bot {
+        align-self: flex-start;
+        background: var(--bot);
+        border: 1px solid rgba(45, 212, 191, 0.1);
+      }
+      .bubble .cite {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+        font-size: 8px;
+        color: var(--muted);
+        font-family: "IBM Plex Mono", monospace;
+      }
+      .bubble .cite strong {
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .composer {
+        padding: 10px 14px 12px;
+        border-top: 1px solid var(--border);
+        flex-shrink: 0;
+        background: var(--elev);
+      }
+      .composer .fake {
+        height: 36px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.25);
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        font-size: 9px;
+        color: #64748b;
+      }
+      .hint {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: var(--muted);
+        opacity: 0.65;
+        pointer-events: none;
+      }
+      html.embed .hint {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="stage">
+        <aside>
+          <div class="aside-head">Knowledge base</div>
+          <div class="kb-list" id="kbList"></div>
+        </aside>
+        <main>
+          <div class="top">
+            <h1>Northwind <span style="color: var(--muted); font-weight: 400">Internal</span></h1>
+            <span class="pill">Company sources only</span>
+          </div>
+          <div class="banner">
+            Looks and feels like a normal chat — answers are retrieved only from your org documents below, not the public web.
+          </div>
+          <div class="msgs" id="msgs"></div>
+          <div class="composer">
+            <div class="fake">Message Northwind Internal…</div>
+          </div>
+        </main>
+      </div>
+    </div>
+    <p class="hint">~24s loop · embed on consulting page</p>
+    <script>
+      if (/[?&]embed=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add("embed");
+      }
+    </script>
+    <script>
+      (function () {
+        var KB_BASE =
+          "<strong>Indexed for this workspace</strong>" +
+          '<div class="kb-item on">Employee_Handbook_2025.pdf</div>' +
+          '<div class="kb-item">IT_Security_Runbook.md</div>' +
+          '<div class="kb-item">PTO_and_Benefits.pdf</div>' +
+          '<div class="kb-item">Brand_Voice_Guidelines.docx</div>' +
+          "<strong>Not connected</strong>" +
+          '<div class="kb-item" style="opacity: 0.45">Web search · disabled</div>' +
+          '<div class="kb-item" style="opacity: 0.45">External LLM general knowledge · not used for answers</div>';
+
+        var LOOP_MS = 24000;
+        var TICK_MS = 40;
+
+        function bubbleUser(t) {
+          return '<div class="bubble user">' + t + "</div>";
+        }
+        function bubbleBot(html) {
+          return '<div class="bubble bot">' + html + "</div>";
+        }
+
+        var STEPS = [
+          {
+            t: 0,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>',
+          },
+          {
+            t: 2000,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>' +
+              bubbleUser("How many days of PTO do new hires get in year one?"),
+          },
+          {
+            t: 4500,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>' +
+              bubbleUser("How many days of PTO do new hires get in year one?") +
+              bubbleBot(
+                "According to your <strong>PTO_and_Benefits.pdf</strong>, full-time hires accrue <strong>15 days</strong> in their first calendar year, prorated from their start date.<div class=\"cite\"><strong>Sources:</strong> PTO_and_Benefits.pdf — section \"Accrual schedule\"</div>"
+              ),
+          },
+          {
+            t: 9000,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>' +
+              bubbleUser("How many days of PTO do new hires get in year one?") +
+              bubbleBot(
+                "According to your <strong>PTO_and_Benefits.pdf</strong>, full-time hires accrue <strong>15 days</strong> in their first calendar year, prorated from their start date.<div class=\"cite\"><strong>Sources:</strong> PTO_and_Benefits.pdf — section \"Accrual schedule\"</div>"
+              ) +
+              bubbleUser("What do I do if I think I clicked a phishing link?"),
+          },
+          {
+            t: 12500,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>' +
+              bubbleUser("How many days of PTO do new hires get in year one?") +
+              bubbleBot(
+                "According to your <strong>PTO_and_Benefits.pdf</strong>, full-time hires accrue <strong>15 days</strong> in their first calendar year, prorated from their start date.<div class=\"cite\"><strong>Sources:</strong> PTO_and_Benefits.pdf — section \"Accrual schedule\"</div>"
+              ) +
+              bubbleUser("What do I do if I think I clicked a phishing link?") +
+              bubbleBot(
+                "Your <strong>IT_Security_Runbook</strong> says: disconnect from VPN, do not enter more passwords, and call the Security hotline at the extension on the intranet home page. Open a ticket in ServiceNow with subject line \"Suspected phishing\".<div class=\"cite\"><strong>Sources:</strong> IT_Security_Runbook.md — \"Incident response\"</div>"
+              ),
+          },
+          {
+            t: 17000,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>' +
+              bubbleUser("How many days of PTO do new hires get in year one?") +
+              bubbleBot(
+                "According to your <strong>PTO_and_Benefits.pdf</strong>, full-time hires accrue <strong>15 days</strong> in their first calendar year, prorated from their start date.<div class=\"cite\"><strong>Sources:</strong> PTO_and_Benefits.pdf — section \"Accrual schedule\"</div>"
+              ) +
+              bubbleUser("What do I do if I think I clicked a phishing link?") +
+              bubbleBot(
+                "Your <strong>IT_Security_Runbook</strong> says: disconnect from VPN, do not enter more passwords, and call the Security hotline at the extension on the intranet home page. Open a ticket in ServiceNow with subject line \"Suspected phishing\".<div class=\"cite\"><strong>Sources:</strong> IT_Security_Runbook.md — \"Incident response\"</div>"
+              ) +
+              bubbleUser("Can you browse the internet for competitor pricing?"),
+          },
+          {
+            t: 19500,
+            kb: KB_BASE,
+            msgs:
+              '<div class="bubble bot">Hi — I am your <strong>Northwind Internal</strong> assistant. Ask anything about policies, IT, or how we work. I only use documents your admin uploaded.</div>' +
+              bubbleUser("How many days of PTO do new hires get in year one?") +
+              bubbleBot(
+                "According to your <strong>PTO_and_Benefits.pdf</strong>, full-time hires accrue <strong>15 days</strong> in their first calendar year, prorated from their start date.<div class=\"cite\"><strong>Sources:</strong> PTO_and_Benefits.pdf — section \"Accrual schedule\"</div>"
+              ) +
+              bubbleUser("What do I do if I think I clicked a phishing link?") +
+              bubbleBot(
+                "Your <strong>IT_Security_Runbook</strong> says: disconnect from VPN, do not enter more passwords, and call the Security hotline at the extension on the intranet home page. Open a ticket in ServiceNow with subject line \"Suspected phishing\".<div class=\"cite\"><strong>Sources:</strong> IT_Security_Runbook.md — \"Incident response\"</div>"
+              ) +
+              bubbleUser("Can you browse the internet for competitor pricing?") +
+              bubbleBot(
+                "I cannot — this workspace is locked to <strong>Northwind</strong> documents only. For market data, use the approved research tools listed in the handbook or ask your manager.<div class=\"cite\"><strong>Sources:</strong> Employee_Handbook_2025.pdf — \"Approved software\"</div>"
+              ),
+          },
+        ];
+
+        var phase = 0;
+        var msgsEl = document.getElementById("msgs");
+        var kbEl = document.getElementById("kbList");
+
+        function apply(elapsed) {
+          var step = STEPS[0];
+          for (var i = STEPS.length - 1; i >= 0; i--) {
+            if (elapsed >= STEPS[i].t) {
+              step = STEPS[i];
+              break;
+            }
+          }
+          msgsEl.innerHTML = step.msgs;
+          kbEl.innerHTML = step.kb;
+          msgsEl.scrollTop = msgsEl.scrollHeight;
+        }
+
+        function tick() {
+          var elapsed = phase * TICK_MS;
+          if (elapsed >= LOOP_MS) {
+            phase = 0;
+            apply(0);
+            setTimeout(tick, TICK_MS);
+            return;
+          }
+          apply(elapsed);
+          phase++;
+          setTimeout(tick, TICK_MS);
+        }
+
+        apply(0);
+        setTimeout(tick, 500);
+      })();
+    </script>
+  </body>
+</html>

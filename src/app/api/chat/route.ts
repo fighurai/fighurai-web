@@ -1,29 +1,15 @@
-import Anthropic from "@anthropic-ai/sdk";
-import type { MessageParam } from "@anthropic-ai/sdk/resources/messages";
 import { NextResponse } from "next/server";
 
+import { streamAnthropicChat } from "@/lib/anthropic-chat-agent";
 import {
   getChatModelById,
   pickDefaultModelId,
   type ChatModelOption,
   type ChatProvider,
 } from "@/lib/chat-models";
+import { isAcuityApiConfigured } from "@/lib/acuity-server";
 import { openAIStreamToTextStream } from "@/lib/openai-stream";
-import { FIGHURAI_SYSTEM_PROMPT } from "@/lib/system-prompt";
-import { searchWeb } from "@/lib/web-search";
-
-const DEFAULT_MODEL = "claude-sonnet-4-5-20250929";
-
-function toAnthropicMessages(
-  messages: { role: string; content: string }[],
-): MessageParam[] {
-  return messages
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .map((m) => ({
-      role: m.role as "user" | "assistant",
-      content: m.content,
-    }));
-}
+import { buildFightChatSystemPrompt } from "@/lib/system-prompt";
 
 function apiKeyFor(provider: ChatProvider): string | null {
   switch (provider) {
@@ -53,63 +39,6 @@ function missingKeyMessage(provider: ChatProvider): string {
     default:
       return "Missing API key for this provider.";
   }
-}
-
-async function buildSystemPrompt(
-  useWeb: boolean,
-  messages: { role: string; content: string }[],
-): Promise<string> {
-  let system = FIGHURAI_SYSTEM_PROMPT;
-  if (useWeb) {
-    system += `\n\n(Web mode is ON: DuckDuckGo snippets may appear below. Use them only for general context — **not** to contradict or replace the FIGHURAI facts block. For FIGHURAI services, booking, and contact, trust only the facts already in this prompt.)`;
-    const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    if (lastUser?.content) {
-      const web = await searchWeb(lastUser.content);
-      system += `\n\n--- Web excerpts (supplemental; may be incomplete) ---\n${web}\n--- End web excerpts ---`;
-    }
-  }
-  return system;
-}
-
-async function streamAnthropic(
-  system: string,
-  messages: { role: string; content: string }[],
-  model: string,
-  apiKey: string,
-): Promise<Response> {
-  const anthropic = new Anthropic({ apiKey });
-  const stream = anthropic.messages.stream({
-    model: process.env.ANTHROPIC_MODEL?.trim() || model || DEFAULT_MODEL,
-    max_tokens: 8192,
-    system,
-    messages: toAnthropicMessages(messages),
-  });
-
-  const encoder = new TextEncoder();
-  const readable = new ReadableStream({
-    async start(controller) {
-      const onText = (delta: string) => {
-        controller.enqueue(encoder.encode(delta));
-      };
-      stream.on("text", onText);
-      try {
-        await stream.finalMessage();
-      } catch (err) {
-        const message = err instanceof Error ? err.message : "Streaming failed.";
-        controller.enqueue(encoder.encode(`\n\n_${message}_`));
-      } finally {
-        stream.off("text", onText);
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(readable, {
-    headers: {
-      "Content-Type": "text/plain; charset=utf-8",
-      "Cache-Control": "no-store",
-    },
-  });
 }
 
 async function streamOpenAICompatible(
@@ -170,7 +99,6 @@ export async function POST(request: Request) {
   const b = body as {
     messages?: unknown;
     model?: unknown;
-    useWeb?: unknown;
   };
 
   const rawMessages = b.messages;
@@ -190,7 +118,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No valid messages" }, { status: 400 });
   }
 
-  const useWeb = b.useWeb === true;
   const requestedId = typeof b.model === "string" ? b.model : undefined;
   const option =
     requestedId && getChatModelById(requestedId)
@@ -205,12 +132,21 @@ export async function POST(request: Request) {
     );
   }
 
-  const system = await buildSystemPrompt(useWeb, messages);
+  const acuityChatTools =
+    option.provider === "anthropic" && isAcuityApiConfigured();
+  const system = buildFightChatSystemPrompt(acuityChatTools);
 
   try {
     switch (option.provider) {
       case "anthropic":
-        return await streamAnthropic(system, messages, option.apiModel, key);
+        return await streamAnthropicChat(
+          system,
+          messages,
+          option.apiModel,
+          key,
+          request.signal,
+          acuityChatTools,
+        );
       case "groq":
         return await streamOpenAICompatible(
           "https://api.groq.com/openai/v1/chat/completions",

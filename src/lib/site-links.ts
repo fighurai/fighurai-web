@@ -1,5 +1,6 @@
-/** Acuity Scheduling — pick a time that works for you */
+/** Acuity Scheduling — pick a time that works for you (override in deploy with NEXT_PUBLIC_BOOKING_URL). */
 export const BOOKING_URL =
+  process.env.NEXT_PUBLIC_BOOKING_URL?.trim() ||
   "https://app.acuityscheduling.com/schedule/fda4c0e1/appointment/86702710/calendar/13223132";
 
 /**

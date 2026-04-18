@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invoice converter — documents to Excel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0c0d10;
+        --panel: #12141a;
+        --border: rgba(255, 255, 255, 0.08);
+        --muted: #8b93a7;
+        --text: #e8ecf4;
+        --accent: #34d399;
+        --excel-h: #1f6f4a;
+        --excel-h2: #185a3e;
+        --row-alt: rgba(255, 255, 255, 0.02);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", system-ui, sans-serif;
+        overflow: hidden;
+      }
+      .stage-wrap {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: min(2vh, 12px);
+      }
+      .stage {
+        width: min(96vw, calc(96vh * 16 / 9));
+        aspect-ratio: 16 / 9;
+        max-height: 96vh;
+        display: grid;
+        grid-template-columns: 38fr 62fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .left {
+        background: linear-gradient(180deg, #0f1116 0%, var(--panel) 100%);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .left-head {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+      .left-body {
+        flex: 1;
+        padding: 10px;
+        overflow: auto;
+        font-size: clamp(8px, 1vw, 10px);
+        line-height: 1.45;
+      }
+      .queue-title {
+        font-size: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .doc {
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px;
+        margin-bottom: 8px;
+        background: rgba(0, 0, 0, 0.25);
+      }
+      .doc .name {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+      .doc .meta {
+        color: var(--muted);
+        font-size: 8px;
+      }
+      .doc.processing {
+        border-color: rgba(52, 211, 153, 0.35);
+      }
+      .rules {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 7px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .rules strong {
+        color: var(--text);
+      }
+      .right {
+        background: #0a0b0e;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .sheet-head {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .sheet-head span {
+        font-size: 10px;
+        color: var(--muted);
+      }
+      .sheet-head .file {
+        font-family: "IBM Plex Mono", monospace;
+        font-size: 9px;
+        color: var(--accent);
+      }
+      .sheet-wrap {
+        flex: 1;
+        overflow: auto;
+        padding: 8px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "IBM Plex Mono", monospace;
+        font-size: clamp(7px, 0.85vw, 9px);
+      }
+      th {
+        background: linear-gradient(180deg, var(--excel-h) 0%, var(--excel-h2) 100%);
+        color: #fff;
+        font-weight: 500;
+        text-align: left;
+        padding: 6px 8px;
+        border: 1px solid #145a3a;
+      }
+      td {
+        padding: 5px 8px;
+        border: 1px solid var(--border);
+        color: #d1d5db;
+      }
+      tr:nth-child(even) td {
+        background: var(--row-alt);
+      }
+      td.cat {
+        color: var(--accent);
+      }
+      td.amt {
+        text-align: right;
+      }
+      tr.dim td {
+        opacity: 0.35;
+      }
+      tr.dim td:first-child {
+        opacity: 1;
+      }
+      .hint {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: var(--muted);
+        opacity: 0.65;
+        pointer-events: none;
+      }
+      html.embed .hint {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage-wrap">
+      <div class="stage">
+        <div class="left">
+          <div class="left-head">Source documents</div>
+          <div class="left-body">
+            <div class="queue-title">Company inbox / drive</div>
+            <div id="queue"></div>
+            <div class="rules" id="rules"></div>
+          </div>
+        </div>
+        <div class="right">
+          <div class="sheet-head">
+            <span>Export</span>
+            <span class="file" id="xname">Invoices_2025_Q2.xlsx</span>
+          </div>
+          <div class="sheet-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Vendor</th>
+                  <th>Invoice #</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th>Category (rules)</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">~26s loop · OCR + classification · illustrative</p>
+    <script>
+      if (/[?&]embed=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add("embed");
+      }
+    </script>
+    <script>
+      (function () {
+        var LOOP_MS = 26000;
+        var TICK_MS = 40;
+
+        var ROW_HTML = [
+          ["Acme Steel Co.", "INV-8841", "2025-04-02", "$4,280.00", "Materials · rule: vendor list"],
+          ["Lakeside Electric", "LE-20931", "2025-04-04", "$1,195.50", "Subcontractors · keyword: install"],
+          ["Fleet Fuel LLC", "FF-9912", "2025-04-07", "$623.40", "Fuel &amp; vehicle · GL 6200"],
+          ["Harbor Crane", "HC-441", "2025-04-09", "$8,900.00", "Equipment rental · amount &gt; $5k"],
+        ];
+
+        function rowToHtml(cells, dim) {
+          var cls = dim ? ' class="dim"' : "";
+          return (
+            "<tr" +
+            cls +
+            "><td>" +
+            cells[0] +
+            "</td><td>" +
+            cells[1] +
+            "</td><td>" +
+            cells[2] +
+            '</td><td class="amt">' +
+            cells[3] +
+            '</td><td class="cat">' +
+            cells[4] +
+            "</td></tr>"
+          );
+        }
+
+        var STEPS = [
+          {
+            t: 0,
+            queue:
+              '<div class="doc"><div class="name">…</div><div class="meta">Drop PDF / scan folder</div></div>',
+            rows: "",
+            rules: "<strong>Rules engine</strong><br/>Map vendors → GL · regex on line items · amount thresholds",
+          },
+          {
+            t: 1800,
+            queue:
+              '<div class="doc processing"><div class="name">scan_batch_01.pdf</div><div class="meta">OCR + field extraction…</div></div>',
+            rows: "",
+            rules: "<strong>Parsing</strong><br/>Tables detected · invoice blocks split",
+          },
+          {
+            t: 4000,
+            queue:
+              '<div class="doc processing"><div class="name">scan_batch_01.pdf</div><div class="meta">3 invoices found</div></div>',
+            rows: rowToHtml(ROW_HTML[0], false),
+            rules: "<strong>Row 1</strong><br/>Vendor match → category Materials",
+          },
+          {
+            t: 6200,
+            queue:
+              '<div class="doc"><div class="name">scan_batch_01.pdf</div><div class="meta">3 invoices · ✓</div></div><div class="doc processing"><div class="name">vendor_emails.zip</div><div class="meta">PDF attachments…</div></div>',
+            rows: rowToHtml(ROW_HTML[0], false) + rowToHtml(ROW_HTML[1], false),
+            rules: "<strong>Row 2</strong><br/>Line items mention “install” → Subcontractors",
+          },
+          {
+            t: 8800,
+            queue:
+              '<div class="doc"><div class="name">scan_batch_01.pdf</div><div class="meta">✓ exported</div></div><div class="doc processing"><div class="name">vendor_emails.zip</div><div class="meta">2 PDFs extracted</div></div>',
+            rows:
+              rowToHtml(ROW_HTML[0], false) +
+              rowToHtml(ROW_HTML[1], false) +
+              rowToHtml(ROW_HTML[2], false),
+            rules: "<strong>Row 3</strong><br/>Merchant code · Fuel &amp; vehicle",
+          },
+          {
+            t: 11500,
+            queue:
+              '<div class="doc"><div class="name">vendor_emails.zip</div><div class="meta">✓</div></div><div class="doc processing"><div class="name">HC-April.pdf</div><div class="meta">Single-page invoice</div></div>',
+            rows:
+              rowToHtml(ROW_HTML[0], true) +
+              rowToHtml(ROW_HTML[1], true) +
+              rowToHtml(ROW_HTML[2], true) +
+              rowToHtml(ROW_HTML[3], false),
+            rules: "<strong>Row 4</strong><br/>Rule: rental if description contains “crane” OR total &gt; $5k",
+          },
+          {
+            t: 15000,
+            queue:
+              '<div class="doc"><div class="name">HC-April.pdf</div><div class="meta">✓ merged</div></div><div class="doc"><div class="name">All sources</div><div class="meta">4 rows · 0 exceptions</div></div>',
+            rows:
+              rowToHtml(ROW_HTML[0], false) +
+              rowToHtml(ROW_HTML[1], false) +
+              rowToHtml(ROW_HTML[2], false) +
+              rowToHtml(ROW_HTML[3], false),
+            rules: "<strong>Validate</strong><br/>Totals cross-check · duplicate invoice # scan",
+          },
+          {
+            t: 19000,
+            queue:
+              '<div class="doc"><div class="name">Export</div><div class="meta">Invoices_2025_Q2.xlsx ready</div></div>',
+            rows:
+              rowToHtml(ROW_HTML[0], false) +
+              rowToHtml(ROW_HTML[1], false) +
+              rowToHtml(ROW_HTML[2], false) +
+              rowToHtml(ROW_HTML[3], false),
+            rules: "<strong>Summary</strong><br/>Σ $15,998.90 · categories balanced to GL map",
+          },
+        ];
+
+        var phase = 0;
+        var queueEl = document.getElementById("queue");
+        var rowsEl = document.getElementById("rows");
+        var rulesEl = document.getElementById("rules");
+
+        function apply(elapsed) {
+          var step = STEPS[0];
+          for (var i = STEPS.length - 1; i >= 0; i--) {
+            if (elapsed >= STEPS[i].t) {
+              step = STEPS[i];
+              break;
+            }
+          }
+          queueEl.innerHTML = step.queue;
+          rowsEl.innerHTML = step.rows;
+          rulesEl.innerHTML = step.rules;
+        }
+
+        function tick() {
+          var elapsed = phase * TICK_MS;
+          if (elapsed >= LOOP_MS) {
+            phase = 0;
+            apply(0);
+            setTimeout(tick, TICK_MS);
+            return;
+          }
+          apply(elapsed);
+          phase++;
+          setTimeout(tick, TICK_MS);
+        }
+
+        apply(0);
+        setTimeout(tick, 400);
+      })();
+    </script>
+  </body>
+</html>

@@ -1,7 +1,6 @@
-/** Interactive demo: Cursor-style editor + live app preview (public/videos/chatbot-build-recorder.html). */
+/** Interactive demo: construction project folder copilot (public/videos/construction-chatbot-demo.html). */
 
-type SparkDemoVideoProps = {
-  /** Small label above the title (e.g. “Demo”) */
+type ConstructionChatDemoProps = {
   eyebrow?: string;
   title?: string;
   description?: string;
@@ -9,16 +8,16 @@ type SparkDemoVideoProps = {
   headingId?: string;
 };
 
-const DEMO_IFRAME_SRC = "/videos/chatbot-build-recorder.html?embed=1";
+const IFRAME_SRC = "/videos/construction-chatbot-demo.html?embed=1";
 
-export function SparkDemoVideo({
+export function ConstructionChatDemo({
   eyebrow = "Demo",
-  title = "Applications",
+  title = "Construction project folder Copilot",
   description =
-    "Illustration of how we work: building in Cursor with a live preview beside it — wiring a chatbot UI and API while the conversation updates in real time.",
+    "A chatbot over your construction project drive: it surfaces what is in your project folders (drawings, specs, RFIs, safety files), answers with cited excerpts, and builds live visuals — charts and dashboards — from that same folder data. About 30 seconds per loop in the clip below.",
   className = "",
-  headingId = "membership-applications-demo-heading",
-}: SparkDemoVideoProps) {
+  headingId = "construction-folder-copilot-heading",
+}: ConstructionChatDemoProps) {
   return (
     <section className={`${className}`.trim()} aria-labelledby={headingId}>
       <div className="mx-auto max-w-4xl px-4 sm:px-6">
@@ -39,8 +38,8 @@ export function SparkDemoVideo({
           <div className="mt-6 overflow-hidden rounded-xl border border-white/[0.1] bg-black/40 ring-1 ring-white/[0.05]">
             <div className="relative aspect-video w-full max-h-[70vh] min-h-[200px]">
               <iframe
-                title="Demo: building a chatbot in Cursor with live app preview"
-                src={DEMO_IFRAME_SRC}
+                title="Demo: construction project folder copilot with folder insight and visuals"
+                src={IFRAME_SRC}
                 className="absolute inset-0 h-full w-full border-0"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -48,7 +47,7 @@ export function SparkDemoVideo({
             </div>
           </div>
           <p className="mt-3 text-center text-[0.65rem] text-[var(--text-faint)]">
-            Sample animation for illustration — your scope and stack would be defined together.
+            Illustrative workflow — about 30s per loop; your storage layout and metrics would be configured together.
           </p>
         </div>
       </div>

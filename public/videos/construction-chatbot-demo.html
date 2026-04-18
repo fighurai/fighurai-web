@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Construction project folder Copilot — demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1115;
+        --panel: #151a22;
+        --border: rgba(255, 255, 255, 0.08);
+        --muted: #8b93a7;
+        --text: #e8ecf4;
+        --accent: #f59e0b;
+        --accent-soft: rgba(245, 158, 11, 0.14);
+        --user-bubble: #1e293b;
+        --bot-bubble: #1a1f2e;
+        --hl: rgba(245, 158, 11, 0.22);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "DM Sans", system-ui, sans-serif;
+        overflow: hidden;
+      }
+      .stage-wrap {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: min(2vh, 16px);
+      }
+      .stage {
+        width: min(96vw, calc(96vh * 16 / 9));
+        aspect-ratio: 16 / 9;
+        max-height: 96vh;
+        display: grid;
+        grid-template-columns: 38fr 62fr;
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+      }
+      .chat-side {
+        background: linear-gradient(180deg, #12151c 0%, var(--panel) 100%);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .chat-head {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .chat-head i {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 12px rgba(245, 158, 11, 0.45);
+      }
+      #chat {
+        flex: 1;
+        padding: 10px 12px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .msg {
+        max-width: 96%;
+        padding: 8px 10px;
+        border-radius: 10px;
+        font-size: clamp(9px, 1.15vw, 11px);
+        line-height: 1.42;
+      }
+      .msg.user {
+        align-self: flex-end;
+        background: var(--user-bubble);
+        border: 1px solid var(--border);
+      }
+      .msg.bot {
+        align-self: flex-start;
+        background: var(--bot-bubble);
+        border: 1px solid rgba(245, 158, 11, 0.12);
+      }
+      .msg .cite {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.85em;
+        color: var(--muted);
+        border-left: 2px solid var(--accent);
+        padding-left: 7px;
+      }
+      .typing {
+        display: inline-flex;
+        gap: 4px;
+        padding: 7px 10px;
+        align-self: flex-start;
+        background: var(--bot-bubble);
+        border-radius: 10px;
+        border: 1px solid var(--border);
+      }
+      .typing span {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: var(--muted);
+        animation: bounce 1.2s ease-in-out infinite;
+      }
+      .typing span:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .typing span:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes bounce {
+        0%,
+        80%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-3px);
+          opacity: 1;
+        }
+      }
+      .hint {
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 11px;
+        color: var(--muted);
+        opacity: 0.75;
+        pointer-events: none;
+      }
+      html.embed .hint {
+        display: none;
+      }
+      .right {
+        background: #0c0e12;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        font-family: "IBM Plex Mono", ui-monospace, monospace;
+      }
+      .right-bar {
+        height: 30px;
+        display: flex;
+        align-items: center;
+        padding: 0 10px;
+        border-bottom: 1px solid var(--border);
+        font-size: 9px;
+        color: var(--muted);
+        gap: 10px;
+        flex-shrink: 0;
+      }
+      .right-bar .vd {
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .right-bar .seg {
+        opacity: 0.45;
+      }
+      .right-bar .seg.on {
+        opacity: 1;
+        color: var(--text);
+      }
+      .right-body {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        font-size: clamp(8px, 0.95vw, 10px);
+      }
+      /* V-Drive hub */
+      .hub {
+        display: grid;
+        grid-template-columns: minmax(0, 34%) 1fr;
+        height: 100%;
+        min-height: 120px;
+      }
+      .hub-files {
+        border-right: 1px solid var(--border);
+        padding: 8px 6px;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+      .hub-files .label {
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-size: 7px;
+        margin-bottom: 6px;
+        color: #6b7280;
+      }
+      .path {
+        font-size: 8px;
+        color: var(--accent);
+        margin-bottom: 8px;
+        word-break: break-all;
+      }
+      .file {
+        padding: 3px 5px;
+        border-radius: 3px;
+        margin-bottom: 1px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .file.on {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .hub-note {
+        padding: 10px;
+        color: #6b7280;
+        font-style: italic;
+        line-height: 1.45;
+      }
+      /* Dashboard */
+      .dash {
+        padding: 10px;
+      }
+      .dash-title {
+        font-size: 9px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .dash-title strong {
+        color: var(--accent);
+      }
+      .dash-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+      }
+      .dash-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 6px;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(6px);
+        transition: opacity 0.35s, transform 0.35s;
+      }
+      .dash-card.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .dash-card .k {
+        display: block;
+        font-size: 7px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+      }
+      .dash-card .v {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .dash-card .v.good {
+        color: #34d399;
+      }
+      .dash-card .v.warn {
+        color: var(--accent);
+      }
+      .dash-foot {
+        margin-top: 8px;
+        font-size: 8px;
+        color: #6b7280;
+      }
+      /* RAG viewer */
+      .viewer {
+        padding: 10px 12px;
+        line-height: 1.45;
+      }
+      .viewer .doc-title {
+        font-size: 9px;
+        color: var(--text);
+        margin-bottom: 6px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--border);
+      }
+      .viewer .retrieval {
+        font-size: 8px;
+        color: var(--accent);
+        margin-bottom: 6px;
+        min-height: 1.1em;
+      }
+      .viewer .excerpt {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        padding: 8px;
+        color: #c4cad6;
+      }
+      .viewer .excerpt mark {
+        background: var(--hl);
+        color: var(--text);
+        padding: 0 2px;
+      }
+      .viewer .placeholder {
+        color: #4b5563;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage-wrap">
+      <div class="stage">
+        <div class="chat-side">
+          <div class="chat-head"><i aria-hidden="true"></i> Construction project folder Copilot</div>
+          <div id="chat"></div>
+        </div>
+        <div class="right">
+          <div class="right-bar" id="rightBar">
+            <span class="vd">Project folders · Riverside</span>
+            <span class="seg on" data-seg="hub">Folders</span>
+            <span class="seg" data-seg="dash">Charts</span>
+            <span class="seg" data-seg="qa">Specs Q&amp;A</span>
+          </div>
+          <div class="right-body" id="rightBody"></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">30s loop — record fullscreen if you need an MP4.</p>
+    <script>
+      if (/[?&]embed=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add("embed");
+      }
+    </script>
+    <script>
+      (function () {
+        const LOOP_MS = 30000;
+        const TICK_MS = 25;
+        const FILES = [
+          "V:\\RiversideTower\\01_Drawings\\S-001.pdf",
+          "V:\\RiversideTower\\02_Specs\\Structural_Notes_RevC.pdf",
+          "V:\\RiversideTower\\03_Submittals\\Concrete_Mix.pdf",
+          "V:\\RiversideTower\\04_Safety\\Plan_2025.pdf",
+        ];
+
+        const chatEl = document.getElementById("chat");
+        const rightBody = document.getElementById("rightBody");
+        const segs = document.querySelectorAll("[data-seg]");
+
+        function setSeg(active) {
+          segs.forEach(function (el) {
+            el.classList.toggle("on", el.getAttribute("data-seg") === active);
+          });
+        }
+
+        function renderHub(activeFile) {
+          setSeg("hub");
+          rightBody.innerHTML =
+            '<div class="hub"><div class="hub-files"><div class="label">Project folder tree</div><div class="path">Drawings · specs · submittals · safety (synced)</div>' +
+            FILES.map(function (f) {
+              var shorty = f.split("\\").pop();
+              return (
+                '<div class="file' +
+                (f === activeFile ? " on" : "") +
+                '">' +
+                shorty +
+                "</div>"
+              );
+            }).join("") +
+            '</div><div class="hub-note">Copilot reads this tree for folder insight, cited answers, and the charts you pin to the trailer or GC deck.</div></div>';
+        }
+
+        function renderDashboard(step) {
+          setSeg("dash");
+          var cards = [
+            { k: "Schedule", v: "94%", cls: "good" },
+            { k: "Open RFIs", v: "7", cls: "warn" },
+            { k: "Incidents (YTD)", v: "0", cls: "good" },
+          ];
+          var show = step.dashCards || 0;
+          var inner = cards
+            .map(function (c, i) {
+              return (
+                '<div class="dash-card' +
+                (i < show ? " show" : "") +
+                '"><span class="k">' +
+                c.k +
+                '</span><span class="v ' +
+                c.cls +
+                '">' +
+                c.v +
+                "</span></div>"
+              );
+            })
+            .join("");
+          rightBody.innerHTML =
+            '<div class="dash"><div class="dash-title"><strong>Live visuals</strong> — metrics from your project folder data (RFIs + schedule + logs)</div><div class="dash-grid">' +
+            inner +
+            '</div><p class="dash-foot">Charts stay tied to file paths above — export or show full-screen on the job trailer.</p></div>';
+        }
+
+        function renderRag(state) {
+          setSeg("qa");
+          if (!state || state.kind === "idle") {
+            rightBody.innerHTML =
+              '<div class="viewer"><p class="placeholder">Ask spec or safety questions; answers cite documents from your project folders.</p></div>';
+            return;
+          }
+          if (state.kind === "search") {
+            rightBody.innerHTML =
+              '<div class="viewer"><p class="retrieval">Searching your project folder index…</p><p class="placeholder">Matching drawings, notes, and submittals.</p></div>';
+            return;
+          }
+          rightBody.innerHTML =
+            '<div class="viewer"><div class="doc-title">' +
+            state.doc +
+            '</div><p class="retrieval">Retrieved for your question</p><div class="excerpt">' +
+            (state.excerpt || "") +
+            "</div></div>";
+        }
+
+        function renderRight(step) {
+          var r = step.right;
+          if (!r || r.kind === "hub") {
+            renderHub(r && r.file ? r.file : null);
+            return;
+          }
+          if (r.kind === "dashboard") {
+            renderDashboard(r);
+            return;
+          }
+          if (r.kind === "rag") {
+            renderRag(r.rag);
+            return;
+          }
+        }
+
+        /** t = milliseconds; one full story every 30s */
+        var STEPS = [
+          { t: 0, typing: true, messages: [], right: { kind: "hub" } },
+          {
+            t: 1800,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+            ],
+            right: { kind: "hub" },
+          },
+          {
+            t: 3200,
+            typing: true,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+            ],
+            right: { kind: "dashboard", dashCards: 0 },
+          },
+          {
+            t: 4800,
+            typing: true,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+            ],
+            right: { kind: "dashboard", dashCards: 1 },
+          },
+          {
+            t: 6000,
+            typing: true,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+            ],
+            right: { kind: "dashboard", dashCards: 2 },
+          },
+          {
+            t: 7200,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+            ],
+            right: { kind: "dashboard", dashCards: 3 },
+          },
+          {
+            t: 10000,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+            ],
+            right: { kind: "dashboard", dashCards: 3 },
+          },
+          {
+            t: 11200,
+            typing: true,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+            ],
+            right: { kind: "rag", rag: { kind: "search" } },
+          },
+          {
+            t: 13200,
+            typing: true,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+            ],
+            right: {
+              kind: "rag",
+              rag: {
+                kind: "chunk",
+                doc: "V:\\…\\Structural_Notes_RevC.pdf — §3.2",
+                excerpt:
+                  '…minimum <mark>clear cover to reinforcement shall be 2 in (50 mm)</mark> for members cast against soil, per ACI 318…',
+              },
+            },
+          },
+          {
+            t: 15800,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+              '<div class="msg bot"><strong>2 in (50 mm)</strong> minimum for concrete cast against earth, per your structural general notes.<span class="cite">Structural_Notes_RevC.pdf §3.2 (project folder)</span></div>',
+            ],
+            right: {
+              kind: "rag",
+              rag: {
+                kind: "chunk",
+                doc: "V:\\…\\Structural_Notes_RevC.pdf — §3.2",
+                excerpt:
+                  '…minimum <mark>clear cover to reinforcement shall be 2 in (50 mm)</mark> for members cast against soil, per ACI 318…',
+              },
+            },
+          },
+          {
+            t: 18800,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+              '<div class="msg bot"><strong>2 in (50 mm)</strong> minimum for concrete cast against earth, per your structural general notes.<span class="cite">Structural_Notes_RevC.pdf §3.2 (project folder)</span></div>',
+              '<div class="msg user">Does our safety plan require harnesses on the west deck at 12 ft?</div>',
+            ],
+            right: {
+              kind: "rag",
+              rag: {
+                kind: "chunk",
+                doc: "V:\\…\\Structural_Notes_RevC.pdf — §3.2",
+                excerpt:
+                  '…minimum <mark>clear cover to reinforcement shall be 2 in (50 mm)</mark> for members cast against soil, per ACI 318…',
+              },
+            },
+          },
+          {
+            t: 20000,
+            typing: true,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+              '<div class="msg bot"><strong>2 in (50 mm)</strong> minimum for concrete cast against earth, per your structural general notes.<span class="cite">Structural_Notes_RevC.pdf §3.2 (project folder)</span></div>',
+              '<div class="msg user">Does our safety plan require harnesses on the west deck at 12 ft?</div>',
+            ],
+            right: { kind: "rag", rag: { kind: "search" } },
+          },
+          {
+            t: 21800,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+              '<div class="msg bot"><strong>2 in (50 mm)</strong> minimum for concrete cast against earth, per your structural general notes.<span class="cite">Structural_Notes_RevC.pdf §3.2 (project folder)</span></div>',
+              '<div class="msg user">Does our safety plan require harnesses on the west deck at 12 ft?</div>',
+            ],
+            right: {
+              kind: "rag",
+              rag: {
+                kind: "chunk",
+                doc: "V:\\…\\Plan_2025.pdf — Fall protection",
+                excerpt:
+                  '…<mark>guardrail OR personal fall arrest (harness + tie-off)</mark> where leading-edge work exceeds 6 ft…',
+              },
+            },
+          },
+          {
+            t: 24800,
+            typing: false,
+            messages: [
+              '<div class="msg user">Give me insight into our project folders — what is new under Drawings and Safety, then build visuals from that for our stand-up.</div>',
+              '<div class="msg bot">From <strong>V:\\RiversideTower</strong>: new sheets in Drawings, safety plan updated. Three live tiles — schedule, open RFIs, field flags — charted from those same paths. Add trades or export anytime.</div>',
+              '<div class="msg user">What clear cover does the structural set require for slab on grade?</div>',
+              '<div class="msg bot"><strong>2 in (50 mm)</strong> minimum for concrete cast against earth, per your structural general notes.<span class="cite">Structural_Notes_RevC.pdf §3.2 (project folder)</span></div>',
+              '<div class="msg user">Does our safety plan require harnesses on the west deck at 12 ft?</div>',
+              '<div class="msg bot">Yes — <strong>guardrail or 100% harness tie-off</strong> on elevated decks; at 12 ft the west deck is in scope for leading-edge rules.<span class="cite">Plan_2025.pdf — Fall protection (project folder)</span></div>',
+            ],
+            right: {
+              kind: "rag",
+              rag: {
+                kind: "chunk",
+                doc: "V:\\…\\Plan_2025.pdf — Fall protection",
+                excerpt:
+                  '…<mark>guardrail OR personal fall arrest (harness + tie-off)</mark> where leading-edge work exceeds 6 ft…',
+              },
+            },
+          },
+        ];
+
+        var phase = 0;
+
+        function applyStep(elapsed) {
+          var step = STEPS[0];
+          for (var i = STEPS.length - 1; i >= 0; i--) {
+            if (elapsed >= STEPS[i].t) {
+              step = STEPS[i];
+              break;
+            }
+          }
+          chatEl.innerHTML = (step.messages || []).join("");
+          if (step.typing) {
+            chatEl.insertAdjacentHTML(
+              "beforeend",
+              '<div class="typing" aria-hidden="true"><span></span><span></span><span></span></div>'
+            );
+          }
+          renderRight(step);
+        }
+
+        function tick() {
+          var elapsed = phase * TICK_MS;
+          if (elapsed >= LOOP_MS) {
+            phase = 0;
+            applyStep(0);
+            setTimeout(tick, TICK_MS);
+            return;
+          }
+          applyStep(elapsed);
+          phase++;
+          setTimeout(tick, TICK_MS);
+        }
+
+        applyStep(0);
+        setTimeout(tick, 400);
+      })();
+    </script>
+  </body>
+</html>

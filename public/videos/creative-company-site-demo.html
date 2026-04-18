@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>North &amp; Signal — creative studio (sample)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-deep: #070508;
+        --bg-mid: #120a10;
+        --fg: #f7f2eb;
+        --fg-dim: rgba(247, 242, 235, 0.72);
+        --muted: #9c948c;
+        --line: rgba(247, 242, 235, 0.1);
+        --coral: #ff5a3c;
+        --coral-dim: rgba(255, 90, 60, 0.15);
+        --gold: #e8c547;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        color: var(--fg);
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        font-size: 15px;
+        line-height: 1.55;
+        background: var(--bg-deep);
+      }
+      .noise {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.04;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        z-index: 0;
+      }
+      .glow {
+        position: fixed;
+        width: 70vw;
+        height: 70vh;
+        top: -20%;
+        right: -15%;
+        background: radial-gradient(ellipse, rgba(255, 90, 60, 0.12) 0%, transparent 65%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .glow2 {
+        position: fixed;
+        width: 50vw;
+        height: 50vh;
+        bottom: -10%;
+        left: -10%;
+        background: radial-gradient(ellipse, rgba(232, 197, 71, 0.06) 0%, transparent 60%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .wrap {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        padding: clamp(18px, 4vw, 36px);
+        max-width: 1080px;
+        margin: 0 auto;
+      }
+      .nav {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px 20px;
+        padding: 14px 0 28px;
+        border-bottom: 1px solid var(--line);
+      }
+      .logo {
+        font-family: "Cormorant", Georgia, serif;
+        font-weight: 700;
+        font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+        letter-spacing: 0.02em;
+      }
+      .logo span {
+        color: var(--coral);
+        font-style: italic;
+        font-weight: 500;
+      }
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: clamp(12px, 3vw, 28px);
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: var(--muted);
+      }
+      .nav-links a {
+        color: inherit;
+        text-decoration: none;
+        position: relative;
+        padding-bottom: 2px;
+      }
+      .nav-links a::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 0;
+        height: 1px;
+        background: var(--coral);
+        transition: width 0.25s ease;
+      }
+      .nav-links a:hover {
+        color: var(--fg);
+      }
+      .nav-links a:hover::after {
+        width: 100%;
+      }
+      .nav-cta {
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        padding: 10px 18px;
+        border-radius: 999px;
+        background: var(--coral);
+        color: #fff;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+        white-space: nowrap;
+      }
+      .nav-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 32px rgba(255, 90, 60, 0.35);
+      }
+      .hero {
+        padding: clamp(32px, 8vh, 72px) 0 clamp(28px, 5vh, 48px);
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: var(--gold);
+        margin-bottom: 20px;
+      }
+      .eyebrow::before {
+        content: "";
+        width: 28px;
+        height: 1px;
+        background: linear-gradient(90deg, var(--coral), transparent);
+      }
+      .hero h1 {
+        font-family: "Cormorant", Georgia, serif;
+        font-weight: 600;
+        font-size: clamp(2.35rem, 6.5vw, 3.75rem);
+        line-height: 1.02;
+        letter-spacing: -0.02em;
+        margin: 0 0 22px;
+        max-width: 12ch;
+      }
+      .hero h1 em {
+        font-style: italic;
+        font-weight: 500;
+        background: linear-gradient(120deg, var(--fg) 0%, var(--fg-dim) 45%, var(--coral) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .hero .lead {
+        color: var(--fg-dim);
+        max-width: 36ch;
+        margin: 0 0 28px;
+        font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+        font-weight: 450;
+      }
+      .cta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: center;
+        margin-bottom: 36px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 14px 26px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        border-radius: 999px;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+      }
+      .btn-primary {
+        background: var(--coral);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 40px rgba(255, 90, 60, 0.4);
+      }
+      .btn-ghost {
+        border: 1px solid var(--line);
+        color: var(--fg);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .btn-ghost:hover {
+        border-color: rgba(255, 90, 60, 0.45);
+        background: var(--coral-dim);
+      }
+      .trust {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px 28px;
+        font-size: 0.7rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+      }
+      .trust strong {
+        color: var(--fg-dim);
+        font-weight: 600;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        margin: 0 0 48px;
+        background: var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+      }
+      @media (max-width: 640px) {
+        .stats {
+          grid-template-columns: 1fr;
+        }
+      }
+      .stat {
+        background: rgba(18, 10, 16, 0.85);
+        padding: 20px 22px;
+        text-align: center;
+      }
+      .stat b {
+        display: block;
+        font-family: "Cormorant", Georgia, serif;
+        font-size: clamp(1.75rem, 4vw, 2.25rem);
+        font-weight: 700;
+        color: var(--fg);
+        line-height: 1.1;
+      }
+      .stat span {
+        font-size: 0.68rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-top: 6px;
+        display: block;
+      }
+      .quote {
+        margin: 48px 0 44px;
+        padding: 28px 32px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: linear-gradient(135deg, rgba(255, 90, 60, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+      }
+      .quote p {
+        font-family: "Cormorant", Georgia, serif;
+        font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+        font-style: italic;
+        font-weight: 500;
+        line-height: 1.45;
+        margin: 0 0 16px;
+        color: var(--fg-dim);
+      }
+      .quote footer {
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+      .quote footer strong {
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .foot {
+        padding-top: 28px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+      .foot a {
+        color: var(--coral);
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .foot a:hover {
+        text-decoration: underline;
+      }
+      .hint {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: var(--muted);
+        opacity: 0.65;
+        pointer-events: none;
+        z-index: 5;
+      }
+      html.embed .hint {
+        display: none;
+      }
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .hero > * {
+        animation: rise 0.8s ease backwards;
+      }
+      .hero .eyebrow {
+        animation-delay: 0.05s;
+      }
+      .hero h1 {
+        animation-delay: 0.12s;
+      }
+      .hero .lead {
+        animation-delay: 0.2s;
+      }
+      .cta-row {
+        animation-delay: 0.28s;
+      }
+      .trust {
+        animation-delay: 0.34s;
+      }
+      /* Front-page site chatbot (always visible in this demo) */
+      .site-chat {
+        position: fixed;
+        right: max(14px, env(safe-area-inset-right, 0px));
+        bottom: max(14px, env(safe-area-inset-bottom, 0px));
+        width: min(300px, calc(100vw - 28px));
+        z-index: 50;
+        border-radius: 16px;
+        border: 1px solid var(--line);
+        background: rgba(10, 7, 9, 0.92);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 90, 60, 0.12);
+        font-size: 0.8rem;
+        line-height: 1.45;
+        overflow: hidden;
+      }
+      .site-chat-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 90, 60, 0.08);
+      }
+      .site-chat-head i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: var(--coral);
+        box-shadow: 0 0 12px rgba(255, 90, 60, 0.5);
+        flex-shrink: 0;
+      }
+      .site-chat-head div {
+        min-width: 0;
+      }
+      .site-chat-head strong {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--fg);
+      }
+      .site-chat-head span {
+        display: block;
+        font-size: 0.65rem;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .site-chat-body {
+        padding: 12px 14px;
+        max-height: min(220px, 32vh);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .cb {
+        max-width: 95%;
+        padding: 9px 11px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+      }
+      .cb.user {
+        align-self: flex-end;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--line);
+        color: var(--fg-dim);
+      }
+      .cb.bot {
+        align-self: flex-start;
+        background: rgba(255, 90, 60, 0.09);
+        border: 1px solid rgba(255, 90, 60, 0.2);
+        color: var(--fg-dim);
+      }
+      .site-chat-foot {
+        padding: 10px 12px 12px;
+        border-top: 1px solid var(--line);
+      }
+      .site-chat-foot .fake-input {
+        height: 38px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.35);
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        font-size: 0.68rem;
+        color: #6b6560;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="glow2" aria-hidden="true"></div>
+    <div class="wrap">
+      <header class="nav">
+        <div class="logo">North<span>&amp;</span>Signal</div>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#">Work</a>
+          <a href="#">Studio</a>
+          <a href="#">Journal</a>
+          <a href="#">Contact</a>
+        </nav>
+        <a class="nav-cta" href="#">Book intro</a>
+      </header>
+
+      <section class="hero">
+        <p class="eyebrow">Creative studio · brand &amp; digital</p>
+        <h1>Make the next launch <em>unmissable.</em></h1>
+        <p class="lead">
+          We designed this site for a studio that wanted luxury restraint, loud typography, and a portfolio that
+          feels like a gallery — not another SaaS landing clone. A site-aware chatbot on the front page answers visitor
+          questions in context.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#">Start a project</a>
+          <a class="btn btn-ghost" href="#">Watch reel — 2 min</a>
+        </div>
+        <div class="trust">
+          <span><strong>Recent</strong> · Sonar Labs · Morrow Hotels · Field Kit</span>
+        </div>
+      </section>
+
+      <div class="stats" aria-label="Highlights">
+        <div class="stat">
+          <b>72h</b>
+          <span>Concept to first design pass</span>
+        </div>
+        <div class="stat">
+          <b>140+</b>
+          <span>Shipped brand &amp; web programs</span>
+        </div>
+        <div class="stat">
+          <b>4.9</b>
+          <span>Average client satisfaction</span>
+        </div>
+      </div>
+
+      <blockquote class="quote">
+        <p>
+          “They killed our old generic site in six weeks. Traffic doubled and our deck finally matches how premium we
+          actually are.”
+        </p>
+        <footer><strong>Creative Director</strong> · Harbor Audio</footer>
+      </blockquote>
+
+      <footer class="foot">
+        <span>Sample client experience — illustrative of FIGHURAI web &amp; brand deliverables.</span>
+        <a href="mailto:hello@fighurai.com">hello@fighurai.com</a>
+      </footer>
+    </div>
+
+    <aside class="site-chat" aria-label="Site assistant chatbot">
+      <div class="site-chat-head">
+        <i aria-hidden="true"></i>
+        <div>
+          <strong>Site assistant</strong>
+          <span>Visitors ask questions about this site — answers stay on-brand.</span>
+        </div>
+      </div>
+      <div class="site-chat-body">
+        <div class="cb user">What happens when I click “Book intro”?</div>
+        <div class="cb bot">
+          It opens our calendar for a short fit call — we walk through scope, timeline, and whether we are the right
+          studio. No fee for the intro.
+        </div>
+        <div class="cb user">Do you work with startups only?</div>
+        <div class="cb bot">
+          We work with startups and established brands. This site is built so the chatbot can pull from the same copy
+          you approve — so answers always match what you publish.
+        </div>
+      </div>
+      <div class="site-chat-foot">
+        <div class="fake-input">Ask anything about this site…</div>
+      </div>
+    </aside>
+
+    <p class="hint">Static preview — embed on fighurai.com consulting page.</p>
+    <script>
+      if (/[?&]embed=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add("embed");
+      }
+    </script>
+  </body>
+</html>
