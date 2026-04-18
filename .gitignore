@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local tooling (e.g. rembg for asset prep)
+/.venv-rembg/
+
 # vercel
 .vercel
 
