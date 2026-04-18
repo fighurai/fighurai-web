@@ -19,7 +19,7 @@ const cofounders: readonly {
   },
   {
     name: "Fighur Kania",
-    src: "/images/cofounders/fighur-kania.png",
+    src: "/images/cofounders/fighur-kania-cutout.png",
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
     lines: ["Fighur", "Kania"],
