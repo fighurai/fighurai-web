@@ -94,7 +94,11 @@ export function AboutSection({ onOpenChat, onOpenContact }: AboutSectionProps) {
                   alt={person.name}
                   fill
                   sizes="(max-width: 640px) 120px, 128px"
-                  className="object-cover object-center"
+                  className={
+                    person.portraitRoundedSquare
+                      ? "object-contain object-center"
+                      : "object-cover object-center"
+                  }
                   priority
                   unoptimized={Boolean(person.portraitRoundedSquare)}
                 />
