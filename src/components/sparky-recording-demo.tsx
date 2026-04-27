@@ -1,5 +1,5 @@
 /**
- * Stock market analyzer — embedded YouTube walkthrough.
+ * Algorithmic options trading agent (Sparky) — embedded YouTube walkthrough.
  * @see https://www.youtube.com/watch?v=U1lsOr4o_5A
  */
 
@@ -18,19 +18,20 @@ const YOUTUBE_EMBED = "https://www.youtube-nocookie.com/embed/U1lsOr4o_5A";
 
 export function SparkyRecordingDemo({
   eyebrow = "Demo",
-  title = "Stock market analyzer",
+  title = "Algorithmic Options Trading Agent",
   description = (
     <>
-      YouTube walkthrough — embedded below.{" "}
-      <a
-        href={YOUTUBE_WATCH}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-[var(--accent)] underline decoration-[var(--accent)]/40 underline-offset-2 hover:decoration-[var(--accent)]"
-      >
-        Open in YouTube
-      </a>{" "}
-      if the player does not load.
+      A fully customizable trading agent designed to automate complex options
+      strategies. Built as a flexible framework, you can easily switch out trading
+      strategies and risk profiles to fit your exact operational needs. The version
+      demoed below features our internal agent, &quot;Sparky,&quot; which is
+      specifically configured to autonomously evaluate, score, and execute Iron
+      Condors and Strangles using local LLM reasoning.
+      <br />
+      <br />
+      Illustrative workflow — all trades evaluate real live market prices but are
+      executed on a paper money account (NAV is calculated using a fixed $20,000
+      starting balance plus realized {'P&L'}).
     </>
   ),
   className = "",
