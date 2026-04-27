@@ -22,15 +22,20 @@ export default function ConsultingPage() {
         onOpenMembership={() =>
           document.getElementById("membership")?.scrollIntoView({ behavior: "smooth" })
         }
+        onScrollToDemos={() =>
+          document.getElementById("demos")?.scrollIntoView({ behavior: "smooth" })
+        }
       />
       <ServicesSection />
-      <SparkDemoVideo className="mb-12 sm:mb-16" />
-      <SparkyRecordingDemo className="mb-12 sm:mb-16" />
-      <ConstructionChatDemo className="mb-12 sm:mb-16" />
-      <CreativeCompanySiteDemo className="mb-12 sm:mb-16" />
-      <EmailAutomationDemo className="mb-12 sm:mb-16" />
-      <InvoiceConverterDemo className="mb-12 sm:mb-16" />
-      <CompanyChatDemo className="mb-12 sm:mb-16" />
+      <div id="demos" className="scroll-mt-24 sm:scroll-mt-28">
+        <SparkDemoVideo className="mb-12 sm:mb-16" />
+        <SparkyRecordingDemo className="mb-12 sm:mb-16" />
+        <ConstructionChatDemo className="mb-12 sm:mb-16" />
+        <CreativeCompanySiteDemo className="mb-12 sm:mb-16" />
+        <EmailAutomationDemo className="mb-12 sm:mb-16" />
+        <InvoiceConverterDemo className="mb-12 sm:mb-16" />
+        <CompanyChatDemo className="mb-12 sm:mb-16" />
+      </div>
       <MembershipSection />
     </div>
   );

@@ -5,9 +5,15 @@ import { BOOKING_URL } from "@/lib/site-links";
 type HeroSectionProps = {
   onOpenChat?: () => void;
   onOpenMembership?: () => void;
+  /** Consulting only: pill after “Ongoing membership” that scrolls to #demos. */
+  onScrollToDemos?: () => void;
 };
 
-export function HeroSection({ onOpenChat, onOpenMembership }: HeroSectionProps) {
+export function HeroSection({
+  onOpenChat,
+  onOpenMembership,
+  onScrollToDemos,
+}: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden pb-12 sm:pb-16">
       <div
@@ -60,6 +66,15 @@ export function HeroSection({ onOpenChat, onOpenMembership }: HeroSectionProps) 
               className="inline-flex items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-6 py-3 text-sm font-medium text-[var(--text-primary)] backdrop-blur transition hover:border-white/[0.2] hover:bg-white/[0.07]"
             >
               Ongoing membership
+            </button>
+          ) : null}
+          {onScrollToDemos ? (
+            <button
+              type="button"
+              onClick={onScrollToDemos}
+              className="inline-flex items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-6 py-3 text-sm font-medium text-[var(--text-primary)] backdrop-blur transition hover:border-white/[0.2] hover:bg-white/[0.07]"
+            >
+              Demos
             </button>
           ) : null}
         </div>
