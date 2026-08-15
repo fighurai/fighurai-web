@@ -30,17 +30,17 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Link
               href="/"
-              className="inline-flex shrink-0 items-center gap-2 font-display text-lg tracking-tight text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:gap-2.5 sm:text-xl"
+              className="inline-flex shrink-0 items-center transition opacity-95 hover:opacity-100"
+              aria-label="FIGHURAI home"
             >
               <Image
                 src="/images/fighur-smile-logo.png"
-                alt=""
-                width={28}
-                height={28}
-                className="h-7 w-7 object-contain sm:h-8 sm:w-8"
+                alt="FIGHURAI"
+                width={22}
+                height={22}
+                className="h-5 w-5 object-contain sm:h-[1.375rem] sm:w-[1.375rem]"
                 priority
               />
-              <span>FIGHURAI</span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:hidden">
               <a
