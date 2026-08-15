@@ -5,15 +5,9 @@ import { BOOKING_URL } from "@/lib/site-links";
 type HeroSectionProps = {
   onOpenChat?: () => void;
   onOpenMembership?: () => void;
-  /** Consulting only: pill after “Ongoing membership” that scrolls to #demos. */
-  onScrollToDemos?: () => void;
 };
 
-export function HeroSection({
-  onOpenChat,
-  onOpenMembership,
-  onScrollToDemos,
-}: HeroSectionProps) {
+export function HeroSection({ onOpenChat, onOpenMembership }: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden pb-12 sm:pb-16">
       <div
@@ -41,10 +35,6 @@ export function HeroSection({
           organization build workflows, training, and governance around AI — alongside hands-on
           consulting when you need a partner in the room.
         </p>
-        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--text-faint)] sm:text-base">
-          Built by a working ML/LLM engineer — currently shipping production agent workflows and ML
-          pipelines at real scale, not just PowerPoint slides.
-        </p>
         <div className="mt-10 flex flex-wrap gap-3">
           {onOpenChat ? (
             <button
@@ -69,16 +59,7 @@ export function HeroSection({
               onClick={onOpenMembership}
               className="inline-flex items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-6 py-3 text-sm font-medium text-[var(--text-primary)] backdrop-blur transition hover:border-white/[0.2] hover:bg-white/[0.07]"
             >
-              Ongoing membership
-            </button>
-          ) : null}
-          {onScrollToDemos ? (
-            <button
-              type="button"
-              onClick={onScrollToDemos}
-              className="inline-flex items-center justify-center rounded-full border border-white/[0.12] bg-white/[0.04] px-6 py-3 text-sm font-medium text-[var(--text-primary)] backdrop-blur transition hover:border-white/[0.2] hover:bg-white/[0.07]"
-            >
-              Demos
+              See pricing
             </button>
           ) : null}
         </div>

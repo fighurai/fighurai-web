@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 
+import { CredibilitySection } from "@/components/credibility-section";
 import { HeroSection } from "@/components/hero-section";
 import { MembershipSection } from "@/components/membership-section";
 import { ServicesSection } from "@/components/services-section";
-import { SparkyRecordingDemo } from "@/components/sparky-recording-demo";
 
 export default function ConsultingPage() {
   const router = useRouter();
@@ -16,14 +16,9 @@ export default function ConsultingPage() {
         onOpenMembership={() =>
           document.getElementById("membership")?.scrollIntoView({ behavior: "smooth" })
         }
-        onScrollToDemos={() =>
-          document.getElementById("demos")?.scrollIntoView({ behavior: "smooth" })
-        }
       />
+      <CredibilitySection />
       <ServicesSection />
-      <div id="demos" className="scroll-mt-24 sm:scroll-mt-28">
-        <SparkyRecordingDemo className="mb-12 sm:mb-16" />
-      </div>
       <MembershipSection />
     </div>
   );
