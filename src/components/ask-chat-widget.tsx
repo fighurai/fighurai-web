@@ -12,6 +12,7 @@ import { BOOKING_URL } from "@/lib/site-links";
 const FAB_SRC = "/images/ask-fab-smiley.png";
 
 const SUGGESTIONS = [
+  "What's the AI Opportunity Audit?",
   "What does FIGHURAI offer?",
   "How do I book a call?",
 ];

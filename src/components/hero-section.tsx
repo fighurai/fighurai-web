@@ -41,6 +41,10 @@ export function HeroSection({
           organization build workflows, training, and governance around AI — alongside hands-on
           consulting when you need a partner in the room.
         </p>
+        <p className="mt-4 max-w-2xl text-sm leading-relaxed text-[var(--text-faint)] sm:text-base">
+          Built by a working ML/LLM engineer — currently shipping production agent workflows and ML
+          pipelines at real scale, not just PowerPoint slides.
+        </p>
         <div className="mt-10 flex flex-wrap gap-3">
           {onOpenChat ? (
             <button

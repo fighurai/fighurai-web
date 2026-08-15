@@ -30,10 +30,13 @@ export const FIGHUR_BUSINESS_FACTS = `
 **Contact**
 - Email: hello@fighurai.com (services, partnerships, custom engagements).
 
-**Membership & ongoing support (Membership tab)**
-- **Office hours** — monthly live Q&A plus async review of prompts and workflows teams ship; pricing is custom; “book a fit call” via scheduling.
-- **Embedded partner** — retainer: dedicated hours for roadmap, training sprints, on-call guidance as tools change.
-- **Team accelerator** — bounded project: playbooks, templates, lightweight AI operating model; scope via hello@fighurai.com.
+**Entry offer — AI Opportunity Audit (primary conversion)**
+- **AI Opportunity Audit** — **$297 flat, one-time**. A 45-minute working session plus a written 2–3 page report ranking the best AI opportunities for the visitor’s business by effort vs. impact. Built by someone who ships production AI systems, not slide-only advisory. Book via **Book a session** / header **Book** on fighurai.com. Capacity is limited each month (honest scarcity — do not invent countdown timers or fake remaining seats).
+
+**Membership & ongoing support (Membership / Consulting)**
+- **Office hours** — **$600/mo**. Monthly Q&A call plus async email/Slack review of prompts and workflows between sessions. Best for teams that want a steady sounding board without a full retainer. Book a fit call via scheduling.
+- **Embedded partner** — **$3,500/mo** (best value). Weekly calls, on-call support, and roadmap ownership as models and tools shift. Best for orgs that want FIGHURAI in the loop week-to-week.
+- **Team accelerator** — **$5,000–6,000 one-time**. A 4–6 week engagement that builds and ships the agent, pipeline, or workflow (not just a recommendation). Best when a specific system needs to ship on a fixed timeline; scope via hello@fighurai.com.
 
 **Other site areas**
 - **About** — story, how we work, what the Ask tab is for.
