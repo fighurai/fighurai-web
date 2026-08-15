@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { ContactForm } from "@/components/contact-form";
 import { BOOKING_URL } from "@/lib/site-links";
 
@@ -8,7 +10,16 @@ export function SiteFooter() {
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start lg:gap-16">
           <div className="flex flex-col gap-10">
             <div className="max-w-md lg:max-w-lg">
-              <p className="font-display text-2xl text-[var(--text-primary)] sm:text-3xl">FIGHURAI</p>
+              <p className="inline-flex items-center gap-2.5 font-display text-2xl text-[var(--text-primary)] sm:gap-3 sm:text-3xl">
+                <Image
+                  src="/images/fighur-smile-logo.png"
+                  alt=""
+                  width={36}
+                  height={36}
+                  className="h-9 w-9 object-contain sm:h-10 sm:w-10"
+                />
+                <span>FIGHURAI</span>
+              </p>
               <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
                 We help you <em>fighur it out with AI</em> — practical consulting, hands-on
                 training, and an Ask assistant for questions about our services and how to book.

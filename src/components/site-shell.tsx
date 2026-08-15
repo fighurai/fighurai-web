@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -29,9 +30,17 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           <div className="flex w-full min-w-0 items-center justify-between gap-2 sm:w-auto sm:justify-start">
             <Link
               href="/"
-              className="shrink-0 font-display text-lg tracking-tight text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:text-xl"
+              className="inline-flex shrink-0 items-center gap-2 font-display text-lg tracking-tight text-[var(--text-primary)] transition hover:text-[var(--accent)] sm:gap-2.5 sm:text-xl"
             >
-              FIGHURAI
+              <Image
+                src="/images/fighur-smile-logo.png"
+                alt=""
+                width={28}
+                height={28}
+                className="h-7 w-7 object-contain sm:h-8 sm:w-8"
+                priority
+              />
+              <span>FIGHURAI</span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:hidden">
               <a
