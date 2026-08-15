@@ -1,6 +1,5 @@
 /**
- * Consulting credibility — founder/engineering proof near the top of /consulting.
- * Portrait uses the existing About asset for Neema / Fighur Kania.
+ * Consulting About / credibility near the top of /consulting.
  */
 
 import Image from "next/image";
@@ -15,13 +14,13 @@ export function CredibilitySection() {
       <div className="mx-auto max-w-6xl px-2 sm:px-6">
         <div className="rounded-2xl border border-white/[0.08] bg-[var(--card)] p-6 sm:p-8">
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[var(--accent)]">
-            Who builds this
+            About
           </p>
           <h2
             id="credibility-heading"
             className="mt-2 max-w-3xl font-display text-2xl font-medium tracking-tight text-[var(--text-primary)] sm:text-3xl"
           >
-            Built and led by engineers who ship production AI systems — not just advise on them.
+            Led by a working engineer
           </h2>
 
           <div className="mt-8 flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
@@ -37,16 +36,16 @@ export function CredibilitySection() {
             <div className="min-w-0 flex-1">
               <p className="text-lg font-semibold text-[var(--text-primary)]">Neema Kania</p>
               <p className="mt-1 text-sm text-[var(--text-muted)]">
-                BS in Artificial Intelligence · Lead AI Engineer
+                Lead AI Engineer · BS in Artificial Intelligence, LIU Post
               </p>
               <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">
-                Currently building production ML pipelines and LLM/agent systems (LangChain,
-                LangGraph, FastAPI) that process over 1M records daily — hands-on engineering, not
-                consulting theory alone.
-              </p>
-              <p className="mt-4 text-sm leading-relaxed text-[var(--text-faint)]">
-                FIGHURAI is backed by a team of engineers, not a solo advisor. Clients get
-                founder-led delivery from people who actually build the systems.
+                FighurAI is led by Neema Kania, a working Lead AI Engineer who builds production AI
+                systems for a living, not just advises on them. Currently shipping machine learning
+                models, AI agents, and LLM based applications in production environments, including
+                end to end ML pipelines processing over 1 million records daily, AI agents built with
+                LangChain and FastAPI that automate real business processes, and machine learning
+                integrated directly into live systems. BS in Artificial Intelligence, LIU Post.
+                Backed by a small team of engineers, not a single consultant working alone.
               </p>
             </div>
           </div>

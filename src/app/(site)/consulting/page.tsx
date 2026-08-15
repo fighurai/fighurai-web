@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { CredibilitySection } from "@/components/credibility-section";
+import { EngineeringSection } from "@/components/engineering-section";
 import { HeroSection } from "@/components/hero-section";
 import { MembershipSection } from "@/components/membership-section";
 import { ServicesSection } from "@/components/services-section";
@@ -18,6 +19,7 @@ export default function ConsultingPage() {
         }
       />
       <CredibilitySection />
+      <EngineeringSection />
       <ServicesSection />
       <MembershipSection />
     </div>

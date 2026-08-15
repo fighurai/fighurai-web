@@ -12,7 +12,7 @@ import { BOOKING_URL } from "@/lib/site-links";
 const FAB_SRC = "/images/ask-fab-smiley.png";
 
 const SUGGESTIONS = [
-  "What's the AI Workflow Audit & Implementation?",
+  "What's the AI Workflow Audit?",
   "What does FIGHURAI offer?",
   "How do I book a call?",
 ];

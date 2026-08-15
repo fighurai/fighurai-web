@@ -25,7 +25,7 @@ type SpeechSession = {
 };
 
 const SUGGESTIONS = [
-  "What's the AI Workflow Audit & Implementation?",
+  "What's the AI Workflow Audit?",
   "What services does FIGHURAI offer and how do I get started?",
   "How do I book a call with FIGHURAI?",
   "What’s the difference between consulting and membership?",

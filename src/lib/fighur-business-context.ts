@@ -30,16 +30,20 @@ export const FIGHUR_BUSINESS_FACTS = `
 **Contact**
 - Email: hello@fighurai.com (services, partnerships, custom engagements).
 
-**Entry / lead offer — AI Workflow Audit & Implementation**
-- **AI Workflow Audit & Implementation** — **$1,500–$5,000**. A 2-hour discovery session; we identify the top 3 AI opportunities and build + deploy one working automation into the client’s actual tools (not a slide deck). Timeline typically **1–3 weeks**. Book via **Book a session** / header **Book** on fighurai.com.
+**Entry offer — AI Workflow Audit (by business size)**
+- **Micro businesses (1 to 10 employees)** — **$497 flat**. AI Workflow Audit: a short call to map where AI saves real time, plus we build and deploy one working automation live in the session.
+- **Small businesses (11 to 50 employees)** — **$1,500 flat**. Same AI Workflow Audit format, standard scope.
+- **Larger accounts (50 plus employees or more complex scope)** — **$3,000**. Standard AI Workflow Audit plus Implementation.
+- Book via **Book a session** / header **Book** on fighurai.com.
 
 **Engagements & pricing (Consulting)**
-- **Custom AI Agent Development** — **$5,000–$25,000**. Bespoke AI agents for specific business functions (customer support, data analysis, document processing, sales outreach), deployed with documentation and training. Timeline typically **3–8 weeks**.
-- **AI Training & Enablement** — **$500–$2,000 per session** or **$3,000–$8,000** for a multi-session program. Hands-on team training with recorded sessions, custom prompt libraries, and workflow guides.
-- **Retainer — Ongoing AI Operations Support** — **$1,500–$5,000/month**, **3-month minimum**. Ongoing agent maintenance, new workflow builds, and AI strategy.
+- **Custom AI Agent Development** — **$5,000 to $25,000**. Bespoke AI agents for specific business functions (customer support, data analysis, document processing, sales outreach), deployed with documentation and training. Timeline typically **3 to 8 weeks**.
+- **AI Training and Enablement** — **$500 to $2,000 per session** or **$3,000 to $8,000** for a multi session program. Hands on team training with recorded sessions, custom prompt libraries, and workflow guides.
+- **Retainer: Ongoing AI Operations Support** — **$1,500 to $5,000 per month**, **three month minimum**. Ongoing agent maintenance, new workflow builds, and AI strategy.
 
 **Team (credibility)**
-- Led by **Neema Kania** (BS in Artificial Intelligence; Lead AI Engineer) — ships production ML pipelines and LLM/agent systems (LangChain, LangGraph, FastAPI) processing over 1M records daily. FIGHURAI is backed by a team of engineers, not a solo advisor.
+- Led by **Neema Kania**, a working Lead AI Engineer (BS in Artificial Intelligence, LIU Post). Ships machine learning models, AI agents, and LLM based applications in production, including end to end ML pipelines processing over 1 million records daily, agents with LangChain and FastAPI, and ML integrated into live systems. Backed by a small team of engineers, not a single consultant working alone.
+- Engineering background (not paid FighurAI client case studies): AI agents and LLM apps; end to end ML pipelines; ETL and real time analytics at 1 million plus records per day; ML in production with Docker, Kubernetes, and cloud infrastructure.
 
 **Other site areas**
 - **About** — story, how we work, what the Ask tab is for.
