@@ -5,12 +5,6 @@ import { useRouter } from "next/navigation";
 import { HeroSection } from "@/components/hero-section";
 import { MembershipSection } from "@/components/membership-section";
 import { ServicesSection } from "@/components/services-section";
-import { ConstructionChatDemo } from "@/components/construction-chat-demo";
-import { CreativeCompanySiteDemo } from "@/components/creative-company-site-demo";
-import { EmailAutomationDemo } from "@/components/email-automation-demo";
-import { CompanyChatDemo } from "@/components/company-chat-demo";
-import { InvoiceConverterDemo } from "@/components/invoice-converter-demo";
-import { SparkDemoVideo } from "@/components/spark-demo-video";
 import { SparkyRecordingDemo } from "@/components/sparky-recording-demo";
 
 export default function ConsultingPage() {
@@ -28,13 +22,7 @@ export default function ConsultingPage() {
       />
       <ServicesSection />
       <div id="demos" className="scroll-mt-24 sm:scroll-mt-28">
-        <SparkDemoVideo className="mb-12 sm:mb-16" />
         <SparkyRecordingDemo className="mb-12 sm:mb-16" />
-        <ConstructionChatDemo className="mb-12 sm:mb-16" />
-        <CreativeCompanySiteDemo className="mb-12 sm:mb-16" />
-        <EmailAutomationDemo className="mb-12 sm:mb-16" />
-        <InvoiceConverterDemo className="mb-12 sm:mb-16" />
-        <CompanyChatDemo className="mb-12 sm:mb-16" />
       </div>
       <MembershipSection />
     </div>
