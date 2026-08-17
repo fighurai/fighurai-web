@@ -54,8 +54,8 @@ export function CredibilitySection() {
             The Team Behind FIGHURAI
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
-            Working engineers and operators who build production AI systems — a small team, not a
-            single consultant working alone.
+            Alongside our co-founders, we&apos;re backed by a team of software engineers who build
+            production AI systems — not a single consultant working alone.
           </p>
         </div>
 
