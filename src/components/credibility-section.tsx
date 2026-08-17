@@ -13,8 +13,8 @@ const team: readonly {
 }[] = [
   {
     name: "Neema Kania",
-    title: "Lead AI Engineer · BS in Artificial Intelligence, LIU Post",
-    bio: "FighurAI is led by Neema Kania, a working Lead AI Engineer who builds production AI systems for a living, not just advises on them. Currently shipping machine learning models, AI agents, and LLM based applications in production environments, including end to end ML pipelines processing over 1 million records daily, AI agents built with LangChain and FastAPI that automate real business processes, and machine learning integrated directly into live systems. BS in Artificial Intelligence, LIU Post. Backed by a small team of engineers, not a single consultant working alone.",
+    title: "Co-Founder, Lead AI Engineer",
+    bio: "FighurAI is led by Neema Kania, a working Lead AI Engineer who builds production AI systems for a living, not just advises on them. Currently shipping machine learning models, AI agents, and LLM based applications in production environments, including end to end ML pipelines processing over 1 million records daily, AI agents built with LangChain and FastAPI that automate real business processes, and machine learning integrated directly into live systems. Backed by a small team of engineers, not a single consultant working alone.",
     src: "/images/cofounders/fighur-kania-201a.png",
     linkedinHref:
       "https://www.linkedin.com/in/neema-kania-6433a41b7/?skipRedirect=true",
